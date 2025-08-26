@@ -1,0 +1,12 @@
+body{ font-family: "Montserrat", sans-serif; background: #f1f1f1;}
+.MuiBadge-badge{background: #ff5252 !important;}
+/* submenu open close*/
+.ReactCollapse--collapse{
+    transition: height 300ms;
+}
+::-webkit-scrollbar{width: 10px !important; height: 10px !important;}
+::-webkit-scrollbar-thumb{background: #ccc !important;}
+
+.btn-blue{background: #6D28D9 !important; color: #fff !important; padding: 8px 12px !important;}
+.btn-green{background: #049e19 !important; color: #fff !important; padding: 8px 12px !important;}
+.btn-blue:hover{background: #7C3AED !important;}
