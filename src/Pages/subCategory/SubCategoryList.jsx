@@ -52,34 +52,64 @@ const SubCategoryList = () => {
                     cateData?.length !== 0 &&
                     <ul className="w-full">
                         {
-                            cateData?.map((firstLevelCat, index) => {
+                            cateData?.map((firstCatLabel, index) => {
                                 return (
                                     <li className="w-full mb-1" key={index}>
                                         <div className="flex items-center w-full p-2 bg-[#f1f1f1] rounded-sm px-4">
                                             <span className="font-[500] flex items-center gap-4 text-[14px]">
-                                                {firstLevelCat?.name}
+                                                {firstCatLabel?.name}
                                             </span>
                                             <Button className="!min-w-[35px] !w-[35px] !h-[35px] !ronded-full !text-black !ml-auto" onClick={() => expend(index)}>
                                                 <FaAngleDown />
                                             </Button>
                                         </div>
                                         {
-                                            isOpen === index && 
+                                            isOpen === index &&
                                             <>
-                                            {
-                                                firstLevelCat?.children?.length !== 0  && 
-                                                <ul className="w-full">
-                                                    {
-                                                      firstLevelCat?.children?.map((subCat, index) =>{
-                                                        return (
-                                                            <li className="w-full py-1" key={index}>
-                                                                <EditSubCatBox name={subCat?.name}/>
-                                                            </li>
-                                                        )
-                                                      })   
-                                                    }
-                                                </ul>
-                                            }
+                                                {
+                                                    firstCatLabel?.children?.length !== 0 &&
+                                                    <ul className="w-full">
+                                                        {
+                                                            firstCatLabel?.children?.map((subCat, index_) => {
+                                                                return (
+                                                                    <li className="w-full py-1" key={index_}>
+                                                                        <EditSubCatBox
+                                                                            name={subCat?.name}
+                                                                            id={subCat?._id}
+                                                                            cateData={cateData}
+                                                                            index={index_}
+                                                                            selectedCat={subCat?.parentId}
+                                                                            selectedCatName={subCat?.parentCatName}
+                                                                        />
+                             {
+                            subCat?.children?.length !== 0 &&
+                             <ul className="pl-4">
+                                 {
+                                      subCat?.children?.map((thirdLabel, index__) => {
+                                         return (
+                                        <li key={index__} 
+                                        className="w-full hover:bg-[#f1f1f1]">
+                                           <EditSubCatBox
+                                              name={thirdLabel?.name}
+                                              cateData={firstCatLabel?.children}
+                                               index={index__}
+                                                  selectedCat={thirdLabel?.parentId}
+                                                    selectedCatName={thirdLabel?.parentCatName}
+                                                    id={thirdLabel?._id}
+                                                      />
+                                                     </li>
+                                                      )
+                                                   })
+                                                  }
+                         </ul>
+                                                                        }
+                                                                      
+                                                                    </li>
+                                                                )
+                                                            })
+                                                        }
+                                                    </ul>
+                                                }
                                             </>
                                         }
                                     </li>
