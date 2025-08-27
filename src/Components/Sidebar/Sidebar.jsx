@@ -25,7 +25,7 @@ const Sidebar = () => {
             <div className={`sidebar fixed top-0 left-0 bg-[#fff] w-[18%] h-full border-r border-[rgba(0,0,0,0.1)] py-2 px-4 ${isSideBarOpen === true ? 'w-[18%]' : 'w-[0px]'}`}>
                 <div className="py-2 w-full">
                     <Link to='/' className='flex items-center gap-2'>
-                    <img src="https://i.ibb.co.com/dw4bR2nX/Misam-Marifa-Fashion-World.png" alt="logo" className='w-8 h-8 rounded-md' />
+                    <img src="https://res.cloudinary.com/dqokqca8p/image/upload/v1756018288/My%20Brand/Misam_Marifa_Fashion_World_jkz3o8.png" alt="logo" className='w-8 h-8 rounded-md' />
                     <h2 className='text-[16px] font-semibold'>MM Fashion World</h2>
                     </Link>
                 </div>

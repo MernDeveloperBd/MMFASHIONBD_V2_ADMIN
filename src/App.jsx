@@ -10,19 +10,10 @@ import Signup from './Pages/Signup/Signup'
 import Products from './Pages/Products/Products'
 import AddProduct from './Pages/Products/AddProduct'
 // dialog
-import Dialog from '@mui/material/Dialog';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import { IoCloseSharp } from "react-icons/io5";
-import Slide from '@mui/material/Slide';
+
 import HomeSliderBanners from './Pages/HomeSliderBanners/HomeSliderBanners'
-import AddHomeSlide from './Pages/HomeSliderBanners/AddHomeSlide'
 import CategoryList from './Pages/Category/CategoryList'
-import AddCategory from './Pages/Category/addCategory'
 import SubCategoryList from './Pages/subCategory/SubCategoryList'
-import AddSubCategory from './Pages/subCategory/AddSubCategory'
 import Users from './Pages/Users/Users'
 import Orders from './Pages/Orders/Orders'
 import ForgotPassword from './Pages/ForgotPassword/ForgotPassword'
@@ -31,13 +22,10 @@ import ChangePassword from './Pages/ChangePassword/ChangePassword'
 import toast, { Toaster } from 'react-hot-toast'
 import { fetchDataFromApi } from './utils/api'
 import Profile from './Pages/Profile/Profile'
-import AddAddress from './Pages/Address/AddAddress'
-import ChildCategoryList from './Pages/childCategory/ChildCategoryList'
-import EditCategory from './Pages/Category/EditCategory'
+import ProductDetails from './Pages/Products/ProductDetails'
 
-const Transition = (function Transition(props, ref) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
+
+
 
 export const MyContext = createContext()
 function App() {
@@ -82,6 +70,23 @@ function App() {
             </div>
             <div className={`contentRight py-4 px-5 ${isSideBarOpen === false ? 'w-[100%]' : 'w-[82%]'} transition-all`}>
               <Products />
+            </div>
+          </div>
+        </section>
+      )
+    },
+    {
+      path: "/product/:id",
+      exact: true,
+      element: (
+        <section className='main'>
+          <Header />
+          <div className="contentMain flex">
+            <div className={`overflow-hidden sidebarWrapper ${isSideBarOpen === true ? 'w-[18%]' : 'w-[0px] opacity-0'} transition-all`}>
+              <Sidebar />
+            </div>
+            <div className={`contentRight py-4 px-5 ${isSideBarOpen === false ? 'w-[100%]' : 'w-[82%]'} transition-all`}>
+              <ProductDetails />
             </div>
           </div>
         </section>
@@ -267,7 +272,6 @@ function App() {
     const token = localStorage.getItem("accessToken");
     if (token !== undefined && token !== null && token !== "") {
       setIsLogin(true)
-      //`/api/user/user-details?token=${token}`
       fetchDataFromApi(`/api/user/user-details`).then((res) => {
         setUserData(res?.data)
         if (res?.response?.data?.message == 'You have got login') {
@@ -302,36 +306,7 @@ function App() {
       <MyContext.Provider value={values}>
         <RouterProvider router={router} />
         {/* dialog */}
-        <Dialog
-          fullScreen
-          open={isOpenFullScreenPanel.open}
-          onClose={() => setIsOpenFullScreenPanel({ open: false })}
-          slots={{
-            transition: Transition,
-          }}
-        >
-          <AppBar sx={{ position: 'relative' }}>
-            <Toolbar>
-              <IconButton
-                edge="start"
-                color="inherit"
-                onClick={() => setIsOpenFullScreenPanel({ open: false })}
-                aria-label="close"
-              >
-                <IoCloseSharp />
-              </IconButton>
-              <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-                {isOpenFullScreenPanel?.model}
-              </Typography>
-            </Toolbar>
-          </AppBar>
-          {isOpenFullScreenPanel?.model === 'Add Product' && <AddProduct />}
-          {isOpenFullScreenPanel?.model === 'Add Home Slide' && <AddHomeSlide />}
-          {isOpenFullScreenPanel?.model === 'Add Category' && <AddCategory />}
-          {isOpenFullScreenPanel?.model === 'Edit Category' && <EditCategory />}
-          {isOpenFullScreenPanel?.model === 'Add Sub Category' && <AddSubCategory />}
-          {isOpenFullScreenPanel?.model === 'Add New Address' && <AddAddress />}
-        </Dialog>
+       
         <Toaster />
       </MyContext.Provider>
 

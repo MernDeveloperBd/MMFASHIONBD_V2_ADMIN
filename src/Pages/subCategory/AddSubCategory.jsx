@@ -3,6 +3,7 @@ import { FaCloudUploadAlt } from 'react-icons/fa';
 import { useContext, useState } from 'react';
 import { MyContext } from '../../App';
 import { postData } from '../../utils/api';
+import { useNavigate } from 'react-router-dom';
 
 const AddSubCategory = () => {
     const { cateData, openAlertBox, setIsOpenFullScreenPanel, getCat } = useContext(MyContext)
@@ -20,6 +21,7 @@ const AddSubCategory = () => {
         parentCatName: null,
         parentId: null
     });
+    const navigate = useNavigate()
 
     const handleChangeProductCat = (event) => {
         setProductCat(event.target.value);
@@ -74,9 +76,12 @@ const AddSubCategory = () => {
             return false;
         }
         postData("/api/category/createCategory", formFields).then((res) => {
+             console.log(res);
             setTimeout(() => {
                 setIsLoading(false)
                 setIsOpenFullScreenPanel({ open: false })
+                 getCat()
+                navigate('/subCategory/list')
             }, 2500)
             getCat()
         })
@@ -96,17 +101,17 @@ const AddSubCategory = () => {
             return false;
         }
         postData("/api/category/createCategory", formFields2).then((res) => {
+            console.log(res);
+            
             setTimeout(() => {
                 setIsLoading2(false)
                 setIsOpenFullScreenPanel({ open: false })
+                 getCat()
+                navigate('/subCategory/list')
             }, 2500)
             getCat()
         })
-
     }
-
-
-
 
     return (
         <section className='p-5 bg-gray-50 grid grid-cols-1 md:grid-cols-2 gap-6'>
@@ -171,7 +176,7 @@ const AddSubCategory = () => {
                                 onChange={handleChangeProductCat2}
                             >
                                 {
-                                    cateData?.length !== 0 && cateData?.map((item, index) => {
+                                    cateData?.length !== 0 && cateData?.map((item) => {
                                        return (
                                          item?.children?.length !== 0 && item?.children?.map((item2, index) =>{
                                                  return (

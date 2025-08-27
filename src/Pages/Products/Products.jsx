@@ -1,74 +1,201 @@
-import { Button } from "@mui/material";
+import { Button, Select, MenuItem, Checkbox, Tooltip, Pagination } from "@mui/material";
 import { CgExport } from "react-icons/cg";
 import { FiEye } from "react-icons/fi";
 import { MdDeleteOutline } from "react-icons/md";
 import { AiOutlineEdit } from "react-icons/ai";
-import Select from '@mui/material/Select';
-import { useContext, useState } from "react";
-import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
+import { useContext, useEffect, useState } from "react";
 import { Link } from 'react-router-dom'
 import ProgressBar from "../../Components/ProgressBar/ProgressBar";
-import Tooltip from "@mui/material/Tooltip";
-import Pagination from '@mui/material/Pagination';
 import SearchBox from "../../Components/SearchBox/SearchBox";
 import { MyContext } from "../../App";
-
+import { deleteData, fetchDataFromApi } from "../../utils/api";
 
 const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
-
 const Products = () => {
-    const [categoryFilterValue, setCategoryFilterValue] = useState('All');
-    const [page, setPage] = useState(0)
-    const [rowsPerPage, setRowsPerPage] = useState(10)
-    const { setIsOpenFullScreenPanel } = useContext(MyContext)
+    const { setIsOpenFullScreenPanel, isOpenFullScreenPanel, openAlertBox, cateData } = useContext(MyContext)
+    const [productCat, setProductCat] = useState('');
+    const [productSubCat, setProductSubCat] = useState('');
+    const [productThirdLavelCat, setProductThirdLavelCat] = useState('');
+    const [page, setPage] = useState(1); // mui pagination starts from 1
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [productData, setProductData] = useState([]);
 
-    const handleChangeCatFilter = (event) => {
-        setCategoryFilterValue(event.target.value);
+    useEffect(() => {
+        getProducts()
+    }, [isOpenFullScreenPanel]);
+
+    const getProducts = async () => {
+        fetchDataFromApi('/api/product/getAllProducts').then((res) => {
+            if (res?.error === false) {
+                setProductData(res?.products)
+            } else {
+                console.log('Something error');
+            }
+        })
     };
+
+    const handleChangeProductCat = (event) => {
+        setProductCat(event.target.value);
+        fetchDataFromApi(`/api/product/getAllProductsByCatId/${event.target.value}`).then((res) => {
+            if (res?.error === false) {
+                setProductData(res?.products)
+            }
+        })
+    };
+
+    const handleChangeProductSubCat = (event) => {
+        setProductSubCat(event.target.value);
+        fetchDataFromApi(`/api/product/getAllProductsBySubCatId/${event.target.value}`).then((res) => {
+            if (res?.error === false) {
+                setProductData(res?.products)
+            }
+        })
+    };
+
+    const handleChangeProductThirdLavelCat = (event) => {
+        setProductThirdLavelCat(event.target.value);
+        fetchDataFromApi(`/api/product/getAllProductsByThirdSubCatId/${event.target.value}`).then((res) => {
+            if (res?.error === false) {
+                setProductData(res?.products)
+            }
+        })
+    };
+   
+
+    const deleteProduct = (id) => {
+        deleteData(`/api/product/${id}`).then(() => {
+            getProducts()
+            openAlertBox("success", "Product deleted successfully done")
+        })
+    };
+
+    const handleChangePage = (event, value) => {
+        setPage(value);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(1); // reset page যখন rowsPerPage change হবে
+    };
+
+    // pagination calculation
+    const startIndex = (page - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const paginatedProducts = productData.slice(startIndex, endIndex);
 
     return (
         <>
             <div className="">
-                {/* Products*/}
                 <div className="card my-0 shadow-md sm:rounded-lg bg-white">
                     <div className="col1 flex items-center px-5 py-4 ">
-                        <h3 className="text-[20px] font-[700]">Products</h3>
+                        <h3 className="text-[20px] font-[700]">Products {productData?.length}</h3>
                         <div className="col ml-auto w-[30%] flex items-center gap-2 justify-end ">
-                            <Button className="!bg-green-600 !text-white !font-[600] flex items-center gap-1"><CgExport className="text-[18px]" />Export</Button>
-                            <Button onClick={() => setIsOpenFullScreenPanel({ open: true, model: 'Add Product' })} className="btn-blue btn-sm !font-[600]">Add Product</Button>
-                        </div>
-                    </div>
-                    <div className="flex items-center justify-between px-5 ">
-                    </div>
-                    {/* select category */}
-                    <div className="flex items-center w-full px-5 justify-between">
-                        <div className="col w-[20%]">
-                            <h4 className="text-[13px] font-[600] mb-3">Category By</h4>
-                            <Select
-                                className="w-full"
-                                size="small"
-                                labelId="demo-simple-select-helper-label"
-                                id="demo-simple-select-helper"
-                                value={categoryFilterValue}
-                                label="Category"
-                                onChange={handleChangeCatFilter}
+                            <Button className="!bg-green-600 !text-white !font-[600] flex items-center gap-1">
+                                <CgExport className="text-[18px]" />Export
+                            </Button>
+                            <Button
+                                onClick={() => setIsOpenFullScreenPanel({ open: true, model: 'Add Product' })}
+                                className="btn-blue btn-sm !font-[600]"
                             >
-                                <MenuItem value="All">
-                                    <em>All</em>
-                                </MenuItem>
-                                <MenuItem value={10}>Panjabi</MenuItem>
-                                <MenuItem value={20}>Tshirt</MenuItem>
-                                <MenuItem value={30}>Ator</MenuItem>
-                            </Select>
+                                Add Product
+                            </Button>
                         </div>
-                        {/* Search box */}
+                    </div>
+
+                    {/* filter + search */}
+                    <div className="flex items-center gap-2 w-full px-5 justify-between">
+                        <div className="col w-[15%]">
+                            <h4 className="text-[13px] font-[600] mb-3">Category By</h4>
+                            {
+                                cateData?.length !== 0 && <Select
+                                    style={{ zoom: "80%" }}
+                                    id='productCatDrop'
+                                    size='small'
+                                    className='w-full'
+                                    value={productCat}
+                                    label="Category"
+                                    onChange={handleChangeProductCat}
+                                >
+                                    {
+                                        cateData?.map((cat, index) => {
+                                            return (
+                                                <MenuItem key={index} value={cat?._id}>{cat?.name}</MenuItem>
+                                            )
+                                        })
+                                    }
+                                </Select>
+                            }
+                        </div>
+                        <div className="col w-[15%]">
+                            <h4 className="text-[13px] font-[600] mb-3">Sub Category By</h4>
+                            {
+                                cateData?.length !== 0 && <Select
+                                    style={{ zoom: '80%' }}
+                                    id='productSubCatDrop'
+                                    size='small'
+                                    className='w-full'
+                                    value={productSubCat}
+                                    label="Sub Category"
+                                    onChange={handleChangeProductSubCat}
+                                >
+                                    {
+                                        cateData?.map((cat) => {
+                                            return (
+                                                cat?.children?.length !== 0 && cat?.children?.map((subCat, index_) => {
+                                                    return (
+                                                        <MenuItem key={index_} value={subCat?._id}>{subCat?.name}</MenuItem>
+                                                    )
+                                                })
+
+
+                                            )
+                                        })
+                                    }
+                                </Select>
+                            }
+                        </div>
+                        <div className="col w-[15%]">
+                            <h4 className="text-[13px] font-[600] mb-3">Third Category By</h4>
+                            {
+                                cateData?.length !== 0 && <Select
+                                    style={{ zoom: '80%' }}
+                                    id='productCatDrop'
+                                    size='small'
+                                    className='w-full'
+                                    value={productThirdLavelCat}
+                                    label="Third Lavel Category"
+                                    onChange={handleChangeProductThirdLavelCat}
+                                >
+                                    {
+                                        cateData?.map((cat) => {
+                                            return (
+                                                cat?.children?.length !== 0 && cat?.children?.map((subCat) => {
+                                                    return (
+                                                        subCat?.children?.length !== 0 && subCat?.children?.map((thirdLabelCat, index__) => {
+                                                            return (
+                                                                <MenuItem key={index__}
+                                                                    value={thirdLabelCat?._id}
+                                                                >{thirdLabelCat?.name}</MenuItem>
+                                                            )
+                                                        })
+
+                                                    )
+                                                })
+
+
+                                            )
+                                        })
+                                    }
+                                </Select>
+                            }
+                        </div>
                         <div className="col w-[20%] ml-auto">
                             <SearchBox />
                         </div>
                     </div>
-                    {/*  */}
+
+                    {/* table */}
                     <div className="relative overflow-x-auto mt-5 mb-5 ">
                         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 ">
                             <thead className="text-xs text-gray-100 uppercase bg-blue-600 dark:bg-gray-700 ">
@@ -76,459 +203,125 @@ const Products = () => {
                                     <th className="px-6 py-2">
                                         <Checkbox {...label} size="small" className="!text-white" />
                                     </th>
-                                    <th scope="col" className="px-3 py-2 whitespace-nowrap">
-                                        Product
-                                    </th>
-                                    <th scope="col" className="px-3 py-2 whitespace-nowrap">
-                                        Category
-                                    </th>
-                                    <th scope="col" className="px-3 py-2 whitespace-nowrap">
-                                        Sub Category
-                                    </th>
-                                    <th scope="col" className="px-3 py-2 whitespace-nowrap">
-                                        Brand
-                                    </th>
-                                    <th scope="col" className="px-3 py-2 whitespace-nowrap">
-                                        Price
-                                    </th>
-                                    <th scope="col" className="px-3 py-2 whitespace-nowrap">
-                                        Sales
-                                    </th>
-                                    <th scope="col" className="px-3 py-2 whitespace-nowrap">
-                                        Action
-                                    </th>
+                                    <th className="px-3 py-2">Product</th>
+                                    <th className="px-3 py-2">Category</th>
+                                    <th className="px-3 py-2">Sub Category</th>
+                                    <th className="px-3 py-2">Brand</th>
+                                    <th className="px-3 py-2">Price</th>
+                                    <th className="px-3 py-2">Sales</th>
+                                    <th className="px-3 py-2">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {/* next row */}
-                                <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                                    <td className="px-6 py-2">
-                                        <Checkbox {...label} size="small" />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-4 w-[320px]">
-                                            <div className="img w-[65px] h-[65px] rounded-md overflow-hidden group">
-                                                <Link to={`/product/1234`}>
-                                                    <img src="https://i.ibb.co/cc5Jj9k4/Premium-Cotton-Print-Panjabi-1400-a-kenakata-bazar-bd.jpg" alt="product image" className="w-full group-hover:scale-105 transition-all" />
-                                                </Link>
-                                            </div>
-                                            <div className="info w-[75%]">
-                                                <h3 className="font-[600] text-[14px] leading-4 hover:text-primary"><Link to={`/product/1234`}>product title here product title here title here title here</Link> </h3>
-                                                <span className="text-[12px]">
-                                                    Brand name
-                                                </span>
-
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Panjabi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Deshi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Suti
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex flex-col gap-2">
-                                            <span className="oldPrice line-through leading-3 text-gray-500 text-[14px] font-[500]">TK<span> 1200</span></span>
-                                            <span className="price text-blue-500 text-[14px] font-[500]">TK<span> 1000</span></span>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <p className="text-[14px] "><span className="font-[600]">234</span> Sale</p>
-                                        <ProgressBar value={40} type={"warning"} />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-2">
-                                            <Tooltip title="Edit" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><AiOutlineEdit className="text-[rgba(0,0,0,0.7)] text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="View" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><FiEye className="text-[rgba(0,0,0,0.7)] text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="Delete" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><MdDeleteOutline className="text-[#8b1c1c] text-[22px]" /></Button></Tooltip>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                                    <td className="px-6 py-2">
-                                        <Checkbox {...label} size="small" />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-4 w-[320px]">
-                                            <div className="img w-[65px] h-[65px] rounded-md overflow-hidden group">
-                                                <Link to={`/product/1234`}>
-                                                    <img src="https://i.ibb.co/cc5Jj9k4/Premium-Cotton-Print-Panjabi-1400-a-kenakata-bazar-bd.jpg" alt="product image" className="w-full group-hover:scale-105 transition-all" />
-                                                </Link>
-                                            </div>
-                                            <div className="info w-[75%]">
-                                                <h3 className="font-[600] text-[14px] leading-4 hover:text-primary"><Link to={`/product/1234`}>product title here product title here title here title here</Link> </h3>
-                                                <span className="text-[12px]">
-                                                    Brand name
-                                                </span>
-
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Panjabi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Deshi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Suti
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex flex-col gap-2">
-                                            <span className="oldPrice line-through leading-3 text-gray-500 text-[14px] font-[500]">TK<span> 1200</span></span>
-                                            <span className="price text-blue-500 text-[14px] font-[500]">TK<span> 1000</span></span>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <p className="text-[14px] "><span className="font-[600]">234</span> Sale</p>
-                                        <ProgressBar value={40} type={"warning"} />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-2">
-                                            <Tooltip title="Edit" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><AiOutlineEdit className="text-yellow-700 text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="View" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><FiEye className="text-[rgba(0,0,0,0.7)] text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="Delete" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><MdDeleteOutline className="text-[#8b1c1c] text-[22px]" /></Button></Tooltip>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                                    <td className="px-6 py-2">
-                                        <Checkbox {...label} size="small" />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-4 w-[320px]">
-                                            <div className="img w-[65px] h-[65px] rounded-md overflow-hidden group">
-                                                <Link to={`/product/1234`}>
-                                                    <img src="https://i.ibb.co/cc5Jj9k4/Premium-Cotton-Print-Panjabi-1400-a-kenakata-bazar-bd.jpg" alt="product image" className="w-full group-hover:scale-105 transition-all" />
-                                                </Link>
-                                            </div>
-                                            <div className="info w-[75%]">
-                                                <h3 className="font-[600] text-[14px] leading-4 hover:text-primary"><Link to={`/product/1234`}>product title here product title here title here title here</Link> </h3>
-                                                <span className="text-[12px]">
-                                                    Brand name
-                                                </span>
-
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Panjabi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Deshi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Suti
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex flex-col gap-2">
-                                            <span className="oldPrice line-through leading-3 text-gray-500 text-[14px] font-[500]">TK<span> 1200</span></span>
-                                            <span className="price text-blue-500 text-[14px] font-[500]">TK<span> 1000</span></span>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <p className="text-[14px] "><span className="font-[600]">234</span> Sale</p>
-                                        <ProgressBar value={40} type={"warning"} />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-2">
-                                            <Tooltip title="Edit" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><AiOutlineEdit className="text-[rgba(0,0,0,0.7)] text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="View" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><FiEye className="text-[rgba(0,0,0,0.7)] text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="Delete" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><MdDeleteOutline className="text-[#8b1c1c] text-[22px]" /></Button></Tooltip>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                                    <td className="px-6 py-2">
-                                        <Checkbox {...label} size="small" />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-4 w-[320px]">
-                                            <div className="img w-[65px] h-[65px] rounded-md overflow-hidden group">
-                                                <Link to={`/product/1234`}>
-                                                    <img src="https://i.ibb.co/cc5Jj9k4/Premium-Cotton-Print-Panjabi-1400-a-kenakata-bazar-bd.jpg" alt="product image" className="w-full group-hover:scale-105 transition-all" />
-                                                </Link>
-                                            </div>
-                                            <div className="info w-[75%]">
-                                                <h3 className="font-[600] text-[14px] leading-4 hover:text-primary"><Link to={`/product/1234`}>product title here product title here title here title here</Link> </h3>
-                                                <span className="text-[12px]">
-                                                    Brand name
-                                                </span>
-
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Panjabi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Deshi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Suti
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex flex-col gap-2">
-                                            <span className="oldPrice line-through leading-3 text-gray-500 text-[14px] font-[500]">TK<span> 1200</span></span>
-                                            <span className="price text-blue-500 text-[14px] font-[500]">TK<span> 1000</span></span>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <p className="text-[14px] "><span className="font-[600]">234</span> Sale</p>
-                                        <ProgressBar value={40} type={"warning"} />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-2">
-                                            <Tooltip title="Edit" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><AiOutlineEdit className="text-[rgba(0,0,0,0.7)] text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="View" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><FiEye className="text-[rgba(0,0,0,0.7)] text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="Delete" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><MdDeleteOutline className="text-[#8b1c1c] text-[22px]" /></Button></Tooltip>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                                    <td className="px-6 py-2">
-                                        <Checkbox {...label} size="small" />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-4 w-[320px]">
-                                            <div className="img w-[65px] h-[65px] rounded-md overflow-hidden group">
-                                                <Link to={`/product/1234`}>
-                                                    <img src="https://i.ibb.co/cc5Jj9k4/Premium-Cotton-Print-Panjabi-1400-a-kenakata-bazar-bd.jpg" alt="product image" className="w-full group-hover:scale-105 transition-all" />
-                                                </Link>
-                                            </div>
-                                            <div className="info w-[75%]">
-                                                <h3 className="font-[600] text-[14px] leading-4 hover:text-primary"><Link to={`/product/1234`}>product title here product title here title here title here</Link> </h3>
-                                                <span className="text-[12px]">
-                                                    Brand name
-                                                </span>
-
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Panjabi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Deshi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Suti
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex flex-col gap-2">
-                                            <span className="oldPrice line-through leading-3 text-gray-500 text-[14px] font-[500]">TK<span> 1200</span></span>
-                                            <span className="price text-blue-500 text-[14px] font-[500]">TK<span> 1000</span></span>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <p className="text-[14px] "><span className="font-[600]">234</span> Sale</p>
-                                        <ProgressBar value={40} type={"warning"} />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-2">
-                                            <Tooltip title="Edit" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><AiOutlineEdit className="text-[rgba(0,0,0,0.7)] text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="View" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><FiEye className="text-[rgba(0,0,0,0.7)] text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="Delete" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><MdDeleteOutline className="text-[#8b1c1c] text-[22px]" /></Button></Tooltip>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                                    <td className="px-6 py-2">
-                                        <Checkbox {...label} size="small" />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-4 w-[320px]">
-                                            <div className="img w-[65px] h-[65px] rounded-md overflow-hidden group">
-                                                <Link to={`/product/1234`}>
-                                                    <img src="https://i.ibb.co/cc5Jj9k4/Premium-Cotton-Print-Panjabi-1400-a-kenakata-bazar-bd.jpg" alt="product image" className="w-full group-hover:scale-105 transition-all" />
-                                                </Link>
-                                            </div>
-                                            <div className="info w-[75%]">
-                                                <h3 className="font-[600] text-[14px] leading-4 hover:text-primary"><Link to={`/product/1234`}>product title here product title here title here title here</Link> </h3>
-                                                <span className="text-[12px]">
-                                                    Brand name
-                                                </span>
-
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Panjabi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Deshi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Suti
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex flex-col gap-2">
-                                            <span className="oldPrice line-through leading-3 text-gray-500 text-[14px] font-[500]">TK<span> 1200</span></span>
-                                            <span className="price text-blue-500 text-[14px] font-[500]">TK<span> 1000</span></span>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <p className="text-[14px] "><span className="font-[600]">234</span> Sale</p>
-                                        <ProgressBar value={40} type={"warning"} />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-2">
-                                            <Tooltip title="Edit" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><AiOutlineEdit className="text-[rgba(0,0,0,0.7)] text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="View" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><FiEye className="text-[rgba(0,0,0,0.7)] text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="Delete" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><MdDeleteOutline className="text-[#8b1c1c] text-[22px]" /></Button></Tooltip>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                                    <td className="px-6 py-2">
-                                        <Checkbox {...label} size="small" />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-4 w-[320px]">
-                                            <div className="img w-[65px] h-[65px] rounded-md overflow-hidden group">
-                                                <Link to={`/product/1234`}>
-                                                    <img src="https://i.ibb.co/cc5Jj9k4/Premium-Cotton-Print-Panjabi-1400-a-kenakata-bazar-bd.jpg" alt="product image" className="w-full group-hover:scale-105 transition-all" />
-                                                </Link>
-                                            </div>
-                                            <div className="info w-[75%]">
-                                                <h3 className="font-[600] text-[14px] leading-4 hover:text-primary"><Link to={`/product/1234`}>product title here product title here title here title here</Link> </h3>
-                                                <span className="text-[12px]">
-                                                    Brand name
-                                                </span>
-
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Panjabi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Deshi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Suti
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex flex-col gap-2">
-                                            <span className="oldPrice line-through leading-3 text-gray-500 text-[14px] font-[500]">TK<span> 1200</span></span>
-                                            <span className="price text-blue-500 text-[14px] font-[500]">TK<span> 1000</span></span>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <p className="text-[14px] "><span className="font-[600]">234</span> Sale</p>
-                                        <ProgressBar value={40} type={"warning"} />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-2">
-                                            <Tooltip title="Edit" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><AiOutlineEdit className="text-[rgba(0,0,0,0.7)] text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="View" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><FiEye className="text-[rgba(0,0,0,0.7)] text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="Delete" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><MdDeleteOutline className="text-[#8b1c1c] text-[22px]" /></Button></Tooltip>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr className="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200">
-                                    <td className="px-6 py-2">
-                                        <Checkbox {...label} size="small" />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-4 w-[320px]">
-                                            <div className="img w-[65px] h-[65px] rounded-md overflow-hidden group">
-                                                <Link to={`/product/1234`}>
-                                                    <img src="https://i.ibb.co/cc5Jj9k4/Premium-Cotton-Print-Panjabi-1400-a-kenakata-bazar-bd.jpg" alt="product image" className="w-full group-hover:scale-105 transition-all" />
-                                                </Link>
-                                            </div>
-                                            <div className="info w-[75%]">
-                                                <h3 className="font-[600] text-[14px] leading-4 hover:text-primary"><Link to={`/product/1234`}>product title here product title here title here title here</Link> </h3>
-                                                <span className="text-[12px]">
-                                                    Brand name
-                                                </span>
-
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Panjabi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Deshi
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        Suti
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex flex-col gap-2">
-                                            <span className="oldPrice line-through leading-3 text-gray-500 text-[14px] font-[500]">TK<span> 1200</span></span>
-                                            <span className="price text-blue-500 text-[14px] font-[500]">TK<span> 1000</span></span>
-                                        </div>
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <p className="text-[14px] "><span className="font-[600]">234</span> Sale</p>
-                                        <ProgressBar value={40} type={"warning"} />
-                                    </td>
-                                    <td className="px-3 py-2">
-                                        <div className="flex items-center gap-2">
-                                            <Tooltip title="Edit" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><AiOutlineEdit className="text-[rgba(0,0,0,0.7)] text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="View" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><FiEye className="text-[rgba(0,0,0,0.7)] text-[22px]" /></Button>
-                                            </Tooltip>
-                                            <Tooltip title="Delete" placement="top">
-                                                <Button className="!w-[35px] !h-[35px] !min-w-[35px]"><MdDeleteOutline className="text-[#8b1c1c] text-[22px]" /></Button></Tooltip>
-                                        </div>
-                                    </td>
-                                </tr>
-
+                                {paginatedProducts.length > 0 &&
+                                    paginatedProducts.slice().reverse().map((product, index) => (
+                                        <tr key={index} className="odd:bg-white even:bg-gray-50 border-b">
+                                            <td className="px-6 py-2">
+                                                <Checkbox {...label} size="small" />
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <div className="flex items-center gap-4 w-[320px]">
+                                                    <div className="img w-[65px] h-[65px] rounded-md overflow-hidden group">
+                                                        <Link to={`/product/${product._id}`}>
+                                                            <img src={product?.images[0]} alt="product image" className="w-full group-hover:scale-105 transition-all" />
+                                                        </Link>
+                                                    </div>
+                                                    <div className="info w-[75%]">
+                                                        <h3 className="font-[600] text-[14px] leading-4 hover:text-primary">
+                                                            <Link to={`/product/${product._id}`}>{product?.name}</Link>
+                                                        </h3>
+                                                        <span className="text-[12px]">{product?.brand}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-3 py-2">{product?.catName}</td>
+                                            <td className="px-3 py-2">{product?.subCat}</td>
+                                            <td className="px-3 py-2">Suti</td>
+                                            <td className="px-3 py-2">
+                                                <div className="flex flex-col gap-2">
+                                                    <span className="oldPrice line-through text-[12px] font-[500] text-red-600">
+                                                        TK<span>{product?.oldPrice}</span>
+                                                    </span>
+                                                    <span className="price text-blue-500 text-[14px] font-[500]">
+                                                        TK<span> {product?.price}</span>
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <p className="text-[14px] ">
+                                                    <span className="font-[600]">{product?.sale}</span> {product?.sale > 1 ? "Sells" : "Sell"}
+                                                </p>
+                                                <ProgressBar value={40} type={"warning"} />
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <div className="flex items-center gap-2">
+                                                    <Tooltip title="Edit">
+                                                        <Button className="!w-[35px] !h-[35px] !min-w-[35px]"
+                                                            onClick={() => setIsOpenFullScreenPanel({ open: true, model: 'Edit Product', id: product?._id })} >
+                                                            <AiOutlineEdit className="text-[22px]" />
+                                                        </Button>
+                                                    </Tooltip>
+                                                    <Tooltip title="View">
+                                                        <Link to={`/product/${product?._id}`}>
+                                                        <Button className="!w-[35px] !h-[35px] !min-w-[35px]">
+                                                            <FiEye className="text-[22px]" />
+                                                        </Button>
+                                                        </Link>
+                                                    </Tooltip>
+                                                    <Tooltip title="Delete">
+                                                        <Button onClick={() => deleteProduct(product?._id)} className="!w-[35px] !h-[35px] !min-w-[35px]">
+                                                            <MdDeleteOutline className="text-[#8b1c1c] text-[22px]" />
+                                                        </Button>
+                                                    </Tooltip>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                }
                             </tbody>
-
                         </table>
                     </div>
+
                     {/* pagination */}
-                    <div className="pb-4 px-4 flex justify-end">
-                        <Pagination count={10} color="primary" />
+                    <div className="pb-4 px-4 flex items-center justify-between">
+                        {/* Rows per page dropdown */}
+                        <div className="flex items-center gap-4">
+                            {/* Rows per page select */}
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm">Rows per page:</span>
+                                <Select
+                                    size="small"
+                                    value={rowsPerPage}
+                                    onChange={handleChangeRowsPerPage}
+                                >
+                                    <MenuItem value={5}>5</MenuItem>
+                                    <MenuItem value={10}>10</MenuItem>
+                                    <MenuItem value={20}>20</MenuItem>
+                                    <MenuItem value={50}>50</MenuItem>
+                                </Select>
+                            </div>
+
+                            {/* Showing X–Y of Z */}
+                            <span className="text-sm text-gray-600">
+                                {`Showing ${(page - 1) * rowsPerPage + 1}–${Math.min(
+                                    page * rowsPerPage,
+                                    productData.length
+                                )} of ${productData.length} products`}
+                            </span>
+                        </div>
+
+
+                        {/* Pagination */}
+                        <Pagination
+                            count={Math.ceil(productData.length / rowsPerPage)}
+                            page={page}
+                            onChange={handleChangePage}
+                            color="primary"
+                            siblingCount={1}   // current page এর পাশে কয়টা দেখাবে
+                            boundaryCount={1}  // শুরু আর শেষে কয়টা দেখাবে
+                        />
                     </div>
-
                 </div>
-
             </div>
         </>
     );

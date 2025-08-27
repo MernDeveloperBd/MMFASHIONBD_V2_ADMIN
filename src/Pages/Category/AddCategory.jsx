@@ -7,10 +7,12 @@ import { useContext, useState } from 'react';
 import { deleteImages, postData } from '../../utils/api';
 import CircularProgress from '@mui/material/CircularProgress';
 import { MyContext } from '../../App';
+import { useNavigate } from 'react-router-dom';
 
 const AddCategory = () => {
-    const { openAlertBox, setIsOpenFullScreenPanel } = useContext(MyContext)
+    const { openAlertBox, setIsOpenFullScreenPanel, getCat } = useContext(MyContext)
     const [isLoading, setIsLoading] = useState(false)
+    const navigate = useNavigate()
     const [formFields, setFormFields] = useState({
         name: "",
         images: []
@@ -62,10 +64,13 @@ const AddCategory = () => {
             setIsLoading(false)
             return false;
         }
-        postData("/api/category/createCategory", formFields).then((res) => {                     
+        postData("/api/category/createCategory", formFields).then((res) => {
+             console.log(res);                     
             setTimeout(() => {
                 setIsLoading(false)
                 setIsOpenFullScreenPanel({ open: false })
+                getCat()
+                navigate('/category/list')
             }, 2500)
               
         })

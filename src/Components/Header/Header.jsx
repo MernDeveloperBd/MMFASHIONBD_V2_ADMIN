@@ -14,6 +14,19 @@ import { AiOutlineMenuUnfold } from "react-icons/ai";
 import { MyContext } from '../../App';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchDataFromApi } from '../../utils/api';
+import Dialog from '@mui/material/Dialog';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+
+import Typography from '@mui/material/Typography';
+import { IoCloseSharp } from "react-icons/io5";
+import Slide from '@mui/material/Slide';
+import AddProduct from '../../Pages/Products/AddProduct';
+import AddCategory from '../../Pages/Category/addCategory';
+import EditCategory from '../../Pages/Category/EditCategory';
+import AddSubCategory from '../../Pages/subCategory/AddSubCategory';
+import AddAddress from '../../Pages/Address/AddAddress';
+import EditProduct from '../../Pages/Products/EditProduct';
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
     '& .MuiBadge-badge': {
@@ -23,11 +36,14 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
         padding: '0 4px',
     },
 }));
+const Transition = (function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 
 const Header = () => {
+    const { isSideBarOpen, setIsSideBarOpen,isLogin, setIsLogin, userData, isOpenFullScreenPanel, setIsOpenFullScreenPanel } = useContext(MyContext)
     const [anchorMyAccount, setAnchorMyAccount] = useState(null);
-    const { isSideBarOpen, setIsSideBarOpen,isLogin, setIsLogin, userData } = useContext(MyContext)
     const open = Boolean(anchorMyAccount);
     const navigate = useNavigate()
     const handleClick = (event) => {
@@ -51,6 +67,7 @@ const Header = () => {
         })
     }
     return (
+        <>
         <header className={`w-full h-[auto] py-2 ${isSideBarOpen === true ? 'pl-60' : 'pl-5'} shadow-md bg-[#fff] border-b border-b-[rgba(0,0,0,0.2)] pr-7 flex items-center justify-between transition-all`}>
             <div className="part1">
                 <Button className='!w-[40px] !h-[40px] !min-w-[40px] !text-black !rounded-full' onClick={() => setIsSideBarOpen(!isSideBarOpen)}>
@@ -147,6 +164,38 @@ const Header = () => {
                 
             </div>
         </header>
+         <Dialog
+          fullScreen
+          open={isOpenFullScreenPanel.open}
+          onClose={() => setIsOpenFullScreenPanel({ open: false })}
+          slots={{
+            transition: Transition,
+          }}
+        >
+          <AppBar sx={{ position: 'relative' }}>
+            <Toolbar>
+              <IconButton
+                edge="start"
+                color="inherit"
+                onClick={() => setIsOpenFullScreenPanel({ open: false })}
+                aria-label="close"
+              >
+                <IoCloseSharp />
+              </IconButton>
+              <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+                {isOpenFullScreenPanel?.model}
+              </Typography>
+            </Toolbar>
+          </AppBar>
+          {isOpenFullScreenPanel?.model === 'Add Product' && <AddProduct />}
+          {isOpenFullScreenPanel?.model === 'Edit Product' && <EditProduct/>}
+          {isOpenFullScreenPanel?.model === 'Add Home Slide' && <AddHomeSlide />}
+          {isOpenFullScreenPanel?.model === 'Add Category' && <AddCategory />}
+          {isOpenFullScreenPanel?.model === 'Edit Category' && <EditCategory />}
+          {isOpenFullScreenPanel?.model === 'Add Sub Category' && <AddSubCategory />}
+          {isOpenFullScreenPanel?.model === 'Add New Address' && <AddAddress />}
+        </Dialog>
+        </>
     );
 };
 

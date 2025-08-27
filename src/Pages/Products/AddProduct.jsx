@@ -9,6 +9,7 @@ import { Button, CircularProgress } from '@mui/material';
 import { FaCloudUploadAlt } from "react-icons/fa";
 import { MyContext } from '../../App';
 import { deleteImages, postData } from '../../utils/api';
+import { useNavigate } from 'react-router-dom';
 
 const MenuProps = {
     PaperProps: {
@@ -19,7 +20,7 @@ const MenuProps = {
 }
 
 const AddProduct = () => {
-    const { cateData, setIsOpenFullScreenPanel } = useContext(MyContext)
+    const { cateData, setIsOpenFullScreenPanel, openAlertBox } = useContext(MyContext)
     const [productCat, setProductCat] = useState('');
     const [productSubCat, setProductSubCat] = useState('');
     const [productThirdLavelCat, setProductThirdLavelCat] = useState('');
@@ -29,6 +30,7 @@ const AddProduct = () => {
     const [color, setColor] = useState([]);
     const [previews, setPriviews] = useState([]);
     const [isLoading, setIsLoading] = useState(false)
+    const navigate = useNavigate()
 
     const [formFields, setFormFields] = useState({
         name: "",
@@ -40,6 +42,7 @@ const AddProduct = () => {
         price: "",
         oldPrice: "",
         resellingPrice: "",
+        category:"",
         catName: "",
         catId: "",
         subCat: "",
@@ -48,8 +51,7 @@ const AddProduct = () => {
         thirdSubCatId: "",
         countInStock: "",
         rating: "",
-        isFeatured: true,
-        discount: "",
+        isFeatured: false,
         productSize: [],
         color: [],
         productWeight: "",
@@ -62,7 +64,9 @@ const AddProduct = () => {
     const handleChangeProductCat = (event) => {
         setProductCat(event.target.value);
         formFields.catId = event.target.value
+        formFields.category = event.target.value        
     };
+    
     const selectCatByName = (name) => {
         formFields.catName = name
     }
@@ -127,17 +131,46 @@ const AddProduct = () => {
     }
     const handleSubmit = (e) => {
         e.preventDefault()
-        console.log(formFields);
+        if(formFields.name === ""){
+            openAlertBox("error", "Please Enter your product Name")
+            return false;
+        }
+        if(formFields.description === ""){
+            openAlertBox("error", "Please Enter your description Name")
+            return false;
+        }
+        if(formFields.price === ""){
+            openAlertBox("error", "Please Enter your product price")
+            return false;
+        }
+        if(formFields.catId === ""){
+            openAlertBox("error", "Please Select product Category")
+            return false;
+        }
+        if(formFields.countInStock === ""){
+            openAlertBox("error", "Please Enter Product Stock")
+            return false;
+        }
+        if(formFields.rating === ""){
+            openAlertBox("error", "Please Enter Product rating")
+            return false;
+        }
         setIsLoading(true)
         postData("/api/product/createProduct", formFields).then((res) => {
-            setTimeout(() => {
+            if(res?.error === false){                
+                 setTimeout(() => {
                 setIsLoading(false)
                 setIsOpenFullScreenPanel({ open: false })
+                navigate('/products')  
+                openAlertBox("success", res?.message)  
             }, 2500) 
-            console.log(res);
             
-
-        })
+            }else{
+                setIsLoading(false)
+                openAlertBox("error", "Product uploaded failed")
+            }
+           
+          })
     }
     const setPriviewsFun = (previewsArr) => {
         setPriviews(previewsArr);
@@ -149,7 +182,7 @@ const AddProduct = () => {
     const removeImg = (image, index) => {
         var imageArr = []
         imageArr = previews
-        deleteImages(`/api/product/deleteImage?img=${image}`).then(() => {
+        deleteImages(`/api/category/deleteImage?img=${image}`).then(() => {
             previews.splice(index, 1)
             setPriviews([])
             setTimeout(() => {
@@ -207,7 +240,7 @@ const AddProduct = () => {
                             <h3 className="text-[14px] font-[500] mb-2"> SubCategory</h3>
                             {
                                 cateData?.length !== 0 && <Select
-                                    id='productCatDrop'
+                                    id='productSubCatDrop'
                                     size='small'
                                     className='w-full'
                                     value={productSubCat}
@@ -301,10 +334,29 @@ const AddProduct = () => {
                     </div>
                     {/* Discount, Weight, size, shopname */}
                     <div className="grid grid-cols-4 mb-3 gap-3">
-                        {/* Discount */}
+                        {/* color */}
                         <div className="col">
-                            <h3 className="text-[14px] font-[500] mb-2">Discount</h3>
-                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='discount' value={formFields.discount} onChange={onChangeInput} />
+                            <h3 className="text-[14px] font-[500] mb-2">Color</h3>
+                            <Select
+                                multiple
+                                labelId="demo-simple-select-label"
+                                id="color"
+                                name="color"
+                                size='small'
+                                className='w-full'
+                                value={color}
+                                label="Product weight"
+                                onChange={handleChangeColor}
+                                MenuProps={MenuProps}
+                            >
+                                <MenuItem value={"red"}>Red</MenuItem>
+                                <MenuItem value={"pink"}>Pink</MenuItem>
+                                <MenuItem value={"white"}>White</MenuItem>
+                                <MenuItem value={"grey"}>Grey</MenuItem>
+                                <MenuItem value={"blue"}>Blue</MenuItem>
+                                <MenuItem value={"green"}>Green</MenuItem>
+                                <MenuItem value={"pink"}>Pink</MenuItem>
+                            </Select>
                         </div>
                         {/* Weight */}
                         <div className="col">
@@ -355,31 +407,7 @@ const AddProduct = () => {
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">WhatsAppNum</h3>
                             <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='whatsApp' value={formFields.whatsApp} onChange={onChangeInput} />
-                        </div>
-                        {/* color */}
-                        <div className="col">
-                            <h3 className="text-[14px] font-[500] mb-2">Color</h3>
-                            <Select
-                                multiple
-                                labelId="demo-simple-select-label"
-                                id="color"
-                                name="color"
-                                size='small'
-                                className='w-full'
-                                value={color}
-                                label="Product weight"
-                                onChange={handleChangeColor}
-                                MenuProps={MenuProps}
-                            >
-                                <MenuItem value={"red"}>Red</MenuItem>
-                                <MenuItem value={"pink"}>Pink</MenuItem>
-                                <MenuItem value={"white"}>White</MenuItem>
-                                <MenuItem value={"grey"}>Grey</MenuItem>
-                                <MenuItem value={"blue"}>Blue</MenuItem>
-                                <MenuItem value={"green"}>Green</MenuItem>
-                                <MenuItem value={"pink"}>Pink</MenuItem>
-                            </Select>
-                        </div>
+                        </div>                       
                         {/* Popular */}
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">Is Featured</h3>
@@ -401,18 +429,13 @@ const AddProduct = () => {
                             <h3 className="text-[14px] font-[500] mb-2">FacebookURL</h3>
                             <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='facebookURL' value={formFields.facebookURL} onChange={onChangeInput} />
                         </div>
-
-                    </div>
-                    {/* Rating */}
-                    <div className="grid grid-cols-4 mb-3 gap-3">
-                        {/* Rating */}
+                             {/* Rating */}
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">Rating</h3>
                             <Rating name="half-rating" defaultValue={1} precision={0.5}
                                 onChange={onChangeRating}
                             />
                         </div>
-
                     </div>
                     {/* Media upload  */}
                     <div className="col w-full py-5 bg-white">

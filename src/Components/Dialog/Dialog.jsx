@@ -1,21 +1,52 @@
+import { useContext } from "react";
+import { MyContext } from "../../App";
+import AddProduct from "../../Pages/Products/AddProduct";
+import AddHomeSlide from "../../Pages/HomeSliderBanners/AddHomeSlide";
+import AddCategory from "../../Pages/Category/addCategory";
+import EditCategory from "../../Pages/Category/EditCategory";
+import AddSubCategory from "../../Pages/subCategory/AddSubCategory";
+import AddAddress from "../../Pages/Address/AddAddress";
+import { AppBar, IconButton, Toolbar, Typography } from "@mui/material";
+import { IoCloseSharp } from "react-icons/io5";
 import Dialog from '@mui/material/Dialog';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemButton from '@mui/material/ListItemButton';
-import List from '@mui/material/List';
-import Divider from '@mui/material/Divider';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import CloseIcon from '@mui/icons-material/Close';
-import Slide from '@mui/material/Slide';
+const Transition = (function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
-const Dialog = () => {
+const DialogBox = () => {
+    const {isOpenFullScreenPanel, setIsOpenFullScreenPanel } = useContext(MyContext)
     return (
-        <div>
-            
-        </div>
+     <Dialog
+          fullScreen
+          open={isOpenFullScreenPanel.open}
+          onClose={() => setIsOpenFullScreenPanel({ open: false })}
+          slots={{
+            transition: Transition,
+          }}
+        >
+          <AppBar sx={{ position: 'relative' }}>
+            <Toolbar>
+              <IconButton
+                edge="start"
+                color="inherit"
+                onClick={() => setIsOpenFullScreenPanel({ open: false })}
+                aria-label="close"
+              >
+                <IoCloseSharp />
+              </IconButton>
+              <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+                {isOpenFullScreenPanel?.model}
+              </Typography>
+            </Toolbar>
+          </AppBar>
+          {isOpenFullScreenPanel?.model === 'Add Product' && <AddProduct />}
+          {isOpenFullScreenPanel?.model === 'Add Home Slide' && <AddHomeSlide />}
+          {isOpenFullScreenPanel?.model === 'Add Category' && <AddCategory />}
+          {isOpenFullScreenPanel?.model === 'Edit Category' && <EditCategory />}
+          {isOpenFullScreenPanel?.model === 'Add Sub Category' && <AddSubCategory />}
+          {isOpenFullScreenPanel?.model === 'Add New Address' && <AddAddress />}
+        </Dialog>
     );
 };
 
-export default Dialog;
+export default DialogBox;
