@@ -1,177 +1,310 @@
 
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import Rating from '@mui/material/Rating';
 import UploadBox from '../../Components/UploadBox/UploadBox';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { IoMdClose } from 'react-icons/io';
-import { Button } from '@mui/material';
+import { Button, CircularProgress } from '@mui/material';
 import { FaCloudUploadAlt } from "react-icons/fa";
-import { menuData } from '../../Components/FilterCatSubCat/filterCatSubCat';
+import { MyContext } from '../../App';
+import { deleteImages, postData } from '../../utils/api';
 
-
+const MenuProps = {
+    PaperProps: {
+        style: {
+            width: 250
+        }
+    }
+}
 
 const AddProduct = () => {
-    const [category, setCategory] = useState('');
-    const [subCategory, setSubCategory] = useState('');
-    const [childCategory, setChildCategory] = useState('');
-    const [popular, setPopular] = useState('');
+    const { cateData, setIsOpenFullScreenPanel } = useContext(MyContext)
+    const [productCat, setProductCat] = useState('');
+    const [productSubCat, setProductSubCat] = useState('');
+    const [productThirdLavelCat, setProductThirdLavelCat] = useState('');
+    const [productFeatured, setproductFeatured] = useState('');
     const [productWeight, setProductWeight] = useState('');
-    const [color, setColor] = useState('');
-    const [productSize, setProductSize] = useState('');
+    const [productSize, setProductSize] = useState([]);
+    const [color, setColor] = useState([]);
+    const [previews, setPriviews] = useState([]);
+    const [isLoading, setIsLoading] = useState(false)
 
-      // Selected category/subCategory খুঁজে বের করা
-  const selectedCategory = menuData.find(cat => cat.title === category);
-  const selectedSubCategory = selectedCategory?.sub?.find(sub => sub.title === subCategory);
+    const [formFields, setFormFields] = useState({
+        name: "",
+        images: [],
+        description: "",
+        brand: "",
+        shopName: "",
+        facebookURL: "",
+        price: "",
+        oldPrice: "",
+        resellingPrice: "",
+        catName: "",
+        catId: "",
+        subCat: "",
+        subCatId: "",
+        thirdSubCat: "",
+        thirdSubCatId: "",
+        countInStock: "",
+        rating: "",
+        isFeatured: true,
+        discount: "",
+        productSize: [],
+        color: [],
+        productWeight: "",
+        location: "",
+        dateCreated: "",
+
+    });
+
 
     const handleChangeProductCat = (event) => {
-        setCategory(event.target.value);
+        setProductCat(event.target.value);
+        formFields.catId = event.target.value
     };
+    const selectCatByName = (name) => {
+        formFields.catName = name
+    }
     const handleChangeProductSubCat = (event) => {
-        setSubCategory(event.target.value);
+        setProductSubCat(event.target.value);
+        formFields.subCatId = event.target.value
     };
-    const handleChangeProductChildCat = (event) => {
-        setChildCategory(event.target.value);
+    const selectSubCatByName = (name) => {
+        formFields.subCat = name
+    }
+    const handleChangeProductThirdLavelCat = (event) => {
+        setProductThirdLavelCat(event.target.value);
+        formFields.thirdSubCatId = event.target.value
     };
-    const handleChangeProductPopular = (event) => {
-        setPopular(event.target.value);
+    const selectThirdLavelCatByName = (name) => {
+        formFields.thirdSubCat = name
+    }
+    const handleChangeProductFeatured = (event) => {
+        setproductFeatured(event.target.value);
+        formFields.isFeatured = event.target.value
     };
+
     const handleChangeProductWeight = (event) => {
         setProductWeight(event.target.value);
+        const {
+            target: { value }
+        } = event;
+        setProductWeight(typeof value === 'string' ? value.split(",") : value)
+        formFields.productWeight = value
     };
     const handleChangeColor = (event) => {
-        setColor(event.target.value);
+        const {
+            target: { value }
+        } = event;
+        setColor(typeof value === 'string' ? value.split(",") : value)
+        formFields.color = value
     };
     const handleChangeProductSize = (event) => {
-        setProductSize(event.target.value);
+        const {
+            target: { value }
+        } = event;
+        setProductSize(typeof value === 'string' ? value.split(",") : value)
+        formFields.productSize = value
+    };
+
+    const onChangeInput = (e) => {
+        const { name, value } = e.target;
+        setFormFields(() => {
+            return {
+                ...formFields,
+                [name]: value
+            }
+        })
+    };
+    const onChangeRating = (e) => {
+        setFormFields(() => (
+            {
+                ...formFields,
+                rating: e.target.value
+            }
+        ))
+    }
+    const handleSubmit = (e) => {
+        e.preventDefault()
+        console.log(formFields);
+        setIsLoading(true)
+        postData("/api/product/createProduct", formFields).then((res) => {
+            setTimeout(() => {
+                setIsLoading(false)
+                setIsOpenFullScreenPanel({ open: false })
+            }, 2500) 
+            console.log(res);
+            
+
+        })
+    }
+    const setPriviewsFun = (previewsArr) => {
+        setPriviews(previewsArr);
+        setFormFields({
+            ...formFields,
+            images: previewsArr
+        });
+    };
+    const removeImg = (image, index) => {
+        var imageArr = []
+        imageArr = previews
+        deleteImages(`/api/product/deleteImage?img=${image}`).then(() => {
+            previews.splice(index, 1)
+            setPriviews([])
+            setTimeout(() => {
+                setPriviews(imageArr)
+                setFormFields({
+                    ...formFields,
+                    images: imageArr
+                });
+            }, 50)
+        })
     };
 
     return (
-        <section className="p-5 bg-gray-50">
-            <form className='form py-3 p-8 '>
+        <section className="p-5 bg-gray-50" >
+            <form className='form py-3 p-8 ' onSubmit={handleSubmit}>
                 <div className='max-h-[75vh] overflow-y-scroll pr-2 mb-3'>
-
                     <div className="grid grid-cols-1 mb-3">
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-1">Title</h3>
-                            <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm " />
+                            <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm " name='name' value={formFields.name} onChange={onChangeInput} />
                         </div>
                     </div>
                     <div className="grid grid-cols-1 mb-3">
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-1">Description</h3>
-                            <textarea type="text" className="w-full border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm" rows={5} />
+                            <textarea type="text" className="w-full border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm" rows={5} name='description' value={formFields.description} onChange={onChangeInput} />
                         </div>
                     </div>
                     {/* Category, Sub, Child, Price */}
-          <div className="grid grid-cols-4 mb-3 gap-3">
-            {/* Category */}
-            <div className="col">
-              <h3 className="text-[14px] font-[500] mb-2">Category</h3>
-              <Select
-                size='small'
-                className='w-full'
-                value={category}
-                onChange={(e) => {
-                  setCategory(e.target.value);
-                  setSubCategory('');
-                  setChildCategory('');
-                }}
-              >
-                <MenuItem value="">Select</MenuItem>
-                {menuData.map((cat, idx) => (
-                  <MenuItem key={idx} value={cat.title}>{cat.title}</MenuItem>
-                ))}
-              </Select>
-            </div>
-
-            {/* Sub Category */}
-            <div className="col">
-              <h3 className="text-[14px] font-[500] mb-2"> SubCategory</h3>
-              <Select
-                size='small'
-                className='w-full'
-                value={subCategory}
-                onChange={(e) => {
-                  setSubCategory(e.target.value);
-                  setChildCategory('');
-                }}
-                disabled={!category}
-              >
-                <MenuItem value="">Select</MenuItem>
-                {selectedCategory?.sub?.map((sub, idx) => (
-                  <MenuItem key={idx} value={sub.title}>{sub.title}</MenuItem>
-                ))}
-              </Select>
-            </div>
-
-            {/* Child Category */}
-            <div className="col">
-              <h3 className="text-[14px] font-[500] mb-2"> Child Category</h3>
-              <Select
-                size='small'
-                className='w-full'
-                value={childCategory}
-                onChange={(e) => setChildCategory(e.target.value)}
-                disabled={!subCategory}
-              >
-                <MenuItem value="">Select</MenuItem>
-                {selectedSubCategory?.sub?.map((child, idx) => (
-                  <MenuItem key={idx} value={child.title}>{child.title}</MenuItem>
-                ))}
-              </Select>
-            </div>
-
-            {/* Price */}
-            <div className="col">
-              <h3 className="text-[14px] font-[500] mb-2">Price</h3>
-              <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield]" />
-            </div>
-          </div>
-                    {/*  */}
                     <div className="grid grid-cols-4 mb-3 gap-3">
-                          {/* Old Price */}
+                        {/* Category */}
+                        <div className="col">
+                            <h3 className="text-[14px] font-[500] mb-2">Category</h3>
+                            {
+                                cateData?.length !== 0 && <Select
+                                    id='productCatDrop'
+                                    size='small'
+                                    className='w-full'
+                                    value={productCat}
+                                    label="Category"
+                                    onChange={handleChangeProductCat}
+                                >
+                                    {
+                                        cateData?.map((cat, index) => {
+                                            return (
+                                                <MenuItem key={index} value={cat?._id} onClick={() => selectCatByName(cat?.name)}>{cat?.name}</MenuItem>
+                                            )
+                                        })
+                                    }
+                                </Select>
+                            }
+                        </div>
+                        {/* Sub Category */}
+                        <div className="col">
+                            <h3 className="text-[14px] font-[500] mb-2"> SubCategory</h3>
+                            {
+                                cateData?.length !== 0 && <Select
+                                    id='productCatDrop'
+                                    size='small'
+                                    className='w-full'
+                                    value={productSubCat}
+                                    label="Sub Category"
+                                    onChange={handleChangeProductSubCat}
+                                >
+                                    {
+                                        cateData?.map((cat) => {
+                                            return (
+                                                cat?.children?.length !== 0 && cat?.children?.map((subCat, index_) => {
+                                                    return (
+                                                        <MenuItem key={index_} value={subCat?._id} onClick={() => selectSubCatByName(subCat?.name)}>{subCat?.name}</MenuItem>
+                                                    )
+                                                })
+
+
+                                            )
+                                        })
+                                    }
+                                </Select>
+                            }
+                        </div>
+                        {/* Child Category */}
+                        <div className="col">
+                            <h3 className="text-[14px] font-[500] mb-2"> Child Category</h3>
+                            {
+                                cateData?.length !== 0 && <Select
+                                    id='productCatDrop'
+                                    size='small'
+                                    className='w-full'
+                                    value={productThirdLavelCat}
+                                    label="Third Lavel Category"
+                                    onChange={handleChangeProductThirdLavelCat}
+                                >
+                                    {
+                                        cateData?.map((cat) => {
+                                            return (
+                                                cat?.children?.length !== 0 && cat?.children?.map((subCat) => {
+                                                    return (
+                                                        subCat?.children?.length !== 0 && subCat?.children?.map((thirdLabelCat, index__) => {
+                                                            return (
+                                                                <MenuItem key={index__} value={thirdLabelCat?._id}
+                                                                    onClick={() => selectThirdLavelCatByName(thirdLabelCat?.name)}
+                                                                >{thirdLabelCat?.name}</MenuItem>
+                                                            )
+                                                        })
+
+                                                    )
+                                                })
+
+
+                                            )
+                                        })
+                                    }
+                                </Select>
+                            }
+                        </div>
+
+                        {/* Price */}
+                        <div className="col">
+                            <h3 className="text-[14px] font-[500] mb-2">Price</h3>
+                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield]" name='price' value={formFields.price} onChange={onChangeInput} />
+                        </div>
+                    </div>
+                    {/* Old Price , Price,Quantity, Brand */}
+                    <div className="grid grid-cols-4 mb-3 gap-3">
+                        {/* Old Price */}
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2"> Old Price</h3>
-                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
-                        </div>
-                        {/* Popular */}
-                        <div className="col">
-                            <h3 className="text-[14px] font-[500] mb-2">Popular</h3>
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="popular"
-                                size='small'
-                                className='w-full'
-                                value={popular}
-                                label="Product Featured"
-                                onChange={handleChangeProductPopular}
-                            >
-                                <MenuItem value={'true'}>True</MenuItem>
-                                <MenuItem value={'false'}>False</MenuItem>
-                            </Select>
+                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='oldPrice' value={formFields.oldPrice} onChange={onChangeInput} />
                         </div>
                         {/* Price */}
                         <div className="col">
+                            <h3 className="text-[14px] font-[500] mb-2">Reselling Price</h3>
+                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield]" name='resellingPrice' value={formFields.resellingPrice} onChange={onChangeInput} />
+                        </div>
+
+                        {/* Quantity */}
+                        <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">Quantity</h3>
-                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='countInStock' value={formFields.countInStock} onChange={onChangeInput} />
                         </div>
                         {/* Brand */}
                         <div className="grid grid-cols-1 mb-3">
                             <div className="col">
                                 <h3 className="text-[14px] font-[500] mb-1">Brand</h3>
-                                <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm " />
+                                <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm " name='brand' value={formFields.brand} onChange={onChangeInput} />
                             </div>
                         </div>
-                      
+
                     </div>
                     {/* Discount, Weight, size, shopname */}
                     <div className="grid grid-cols-4 mb-3 gap-3">
-                          {/* Discount */}
+                        {/* Discount */}
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">Discount</h3>
-                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='discount' value={formFields.discount} onChange={onChangeInput} />
                         </div>
                         {/* Weight */}
                         <div className="col">
@@ -185,7 +318,6 @@ const AddProduct = () => {
                                 label="Product weight"
                                 onChange={handleChangeProductWeight}
                             >
-                                <MenuItem value={'none'}>None</MenuItem>
                                 <MenuItem value={500}>500 gm</MenuItem>
                                 <MenuItem value={700}>700 gm</MenuItem>
                                 <MenuItem value={1000}>1 kg</MenuItem>
@@ -195,6 +327,7 @@ const AddProduct = () => {
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">Size</h3>
                             <Select
+                                multiple
                                 labelId="demo-simple-select-label"
                                 id="productSize"
                                 size='small'
@@ -202,31 +335,32 @@ const AddProduct = () => {
                                 value={productSize}
                                 label="Product size"
                                 onChange={handleChangeProductSize}
+                                MenuProps={MenuProps}
                             >
-                                <MenuItem value={'none'}>None</MenuItem>
-                                <MenuItem value={'small'}>Samll</MenuItem>
+                                <MenuItem value={'small'}>Small</MenuItem>
                                 <MenuItem value={'medium'}>Medium</MenuItem>
                                 <MenuItem value={'large'}>Large</MenuItem>
                             </Select>
                         </div>
-                         {/* shopName */}
+                        {/* shopName */}
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">ShopName</h3>
-                            <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                            <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='shopName' value={formFields.shopName} onChange={onChangeInput} />
                         </div>
-                        
+
                     </div>
-                     {/*Whatapp, Color,facebook url, rating*/}
-                    <div className="grid grid-cols-4 mb-3 gap-3">                        
+                    {/*Whatapp, Color,facebook url, Popular*/}
+                    <div className="grid grid-cols-4 mb-3 gap-3">
                         {/* Whatsapp */}
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">WhatsAppNum</h3>
-                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='whatsApp' value={formFields.whatsApp} onChange={onChangeInput} />
                         </div>
                         {/* color */}
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">Color</h3>
                             <Select
+                                multiple
                                 labelId="demo-simple-select-label"
                                 id="color"
                                 name="color"
@@ -235,74 +369,79 @@ const AddProduct = () => {
                                 value={color}
                                 label="Product weight"
                                 onChange={handleChangeColor}
+                                MenuProps={MenuProps}
                             >
-                                <MenuItem value={'none'}>None</MenuItem>
                                 <MenuItem value={"red"}>Red</MenuItem>
+                                <MenuItem value={"pink"}>Pink</MenuItem>
+                                <MenuItem value={"white"}>White</MenuItem>
+                                <MenuItem value={"grey"}>Grey</MenuItem>
+                                <MenuItem value={"blue"}>Blue</MenuItem>
                                 <MenuItem value={"green"}>Green</MenuItem>
                                 <MenuItem value={"pink"}>Pink</MenuItem>
                             </Select>
                         </div>
-                         {/* facebookUrl */}
+                        {/* Popular */}
+                        <div className="col">
+                            <h3 className="text-[14px] font-[500] mb-2">Is Featured</h3>
+                            <Select
+                                labelId="demo-simple-select-label"
+                                id="productCatDrop"
+                                size='small'
+                                className='w-full'
+                                value={productFeatured}
+                                label="Product Featured"
+                                onChange={handleChangeProductFeatured}
+                            >
+                                <MenuItem value={true}>True</MenuItem>
+                                <MenuItem value={false}>False</MenuItem>
+                            </Select>
+                        </div>
+                        {/* facebookUrl */}
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">FacebookURL</h3>
-                            <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                            <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='facebookURL' value={formFields.facebookURL} onChange={onChangeInput} />
                         </div>
-                         {/* Rating */}
+
+                    </div>
+                    {/* Rating */}
+                    <div className="grid grid-cols-4 mb-3 gap-3">
+                        {/* Rating */}
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">Rating</h3>
-                            <Rating name="half-rating" defaultValue={2.5} precision={0.5} />
+                            <Rating name="half-rating" defaultValue={1} precision={0.5}
+                                onChange={onChangeRating}
+                            />
                         </div>
-                       
+
                     </div>
                     {/* Media upload  */}
                     <div className="col w-full py-5 bg-white">
-                        <h3 className='font-[700] text-[18px] mb-2'>Media and Upload</h3>
                         <div className="grid grid-cols-9 gap-3">
-                            <div className="uploadBoxWrapper relative">
-                                <span className='absolute w-[20px] h-[20px] rounded-full overflow-hidden bg-red-700 -top-[10px] -right-[5px] z-50 flex items-center justify-center cursor-pointer'><IoMdClose className='text-white' /></span>
-                                <div className="uploadBox rounded-md overflow-hidden border border-dashed border-[rgba(0,0,0,0.2)] h-[120px] w-[100%] bg-gray-100 cursor-pointer hover:bg-gray-200 flex items-center justify-center flex-col relative">
-                                    <LazyLoadImage
-                                        className='w-full h-full object-cover'
-                                        alt={"Image"}
-                                        src={'https://i.ibb.co/7JMWmf1M/Print-Panjabi-03-kenakata-bazar-bd.jpg'}
-                                    />
-                                </div>
-                            </div>
-                            <div className="uploadBoxWrapper relative">
-                                <span className='absolute w-[20px] h-[20px] rounded-full overflow-hidden bg-red-700 -top-[10px] -right-[5px] z-50 flex items-center justify-center cursor-pointer'><IoMdClose className='text-white' /></span>
-                                <div className="uploadBox rounded-md overflow-hidden border border-dashed border-[rgba(0,0,0,0.2)] h-[120px] w-[100%] bg-gray-100 cursor-pointer hover:bg-gray-200 flex items-center justify-center flex-col relative">
-                                    <LazyLoadImage
-                                        className='w-full h-full object-cover'
-                                        alt={"Image"}
-                                        src={'https://i.ibb.co/7JMWmf1M/Print-Panjabi-03-kenakata-bazar-bd.jpg'}
-                                    />
-                                </div>
-                            </div>
-                            <div className="uploadBoxWrapper relative">
-                                <span className='absolute w-[20px] h-[20px] rounded-full overflow-hidden bg-red-700 -top-[10px] -right-[5px] z-50 flex items-center justify-center cursor-pointer'><IoMdClose className='text-white' /></span>
-                                <div className="uploadBox rounded-md overflow-hidden border border-dashed border-[rgba(0,0,0,0.2)] h-[120px] w-[100%] bg-gray-100 cursor-pointer hover:bg-gray-200 flex items-center justify-center flex-col relative">
-                                    <LazyLoadImage
-                                        className='w-full h-full object-cover'
-                                        alt={"Image"}
-                                        src={'https://i.ibb.co/7JMWmf1M/Print-Panjabi-03-kenakata-bazar-bd.jpg'}
-                                    />
-                                </div>
-                            </div>
-                            <div className="uploadBoxWrapper relative">
-                                <span className='absolute w-[20px] h-[20px] rounded-full overflow-hidden bg-red-700 -top-[10px] -right-[5px] z-50 flex items-center justify-center cursor-pointer'><IoMdClose className='text-white' /></span>
-                                <div className="uploadBox rounded-md overflow-hidden border border-dashed border-[rgba(0,0,0,0.2)] h-[120px] w-[100%] bg-gray-100 cursor-pointer hover:bg-gray-200 flex items-center justify-center flex-col relative">
-                                    <LazyLoadImage
-                                        className='w-full h-full object-cover'
-                                        alt={"Image"}
-                                        src={'https://i.ibb.co/7JMWmf1M/Print-Panjabi-03-kenakata-bazar-bd.jpg'}
-                                    />
-                                </div>
-                            </div>
-                            <UploadBox multiple={true} />
+                            {
+                                previews?.length !== 0 && previews?.map((image, index) => {
+                                    return (
+                                        <div key={index} className="uploadBoxWrapper relative">
+                                            <span className='absolute w-[20px] h-[20px] rounded-full overflow-hidden bg-red-700 -top-[5px] -right-[5px] z-50 flex items-center justify-center cursor-pointer' onClick={() => removeImg(image, index)}><IoMdClose className='text-white' /></span>
+
+                                            <div className="uploadBox rounded-md overflow-hidden border border-dashed border-[rgba(0,0,0,0.2)] h-[120px] w-[100%] bg-gray-100 cursor-pointer hover:bg-gray-200 flex items-center justify-center flex-col relative">
+                                                <img src={image} alt={"Image"} className='w-full h-full object-cover' />
+                                            </div>
+                                        </div>
+                                    )
+                                })
+                            }
+
+                            <UploadBox multiple={true} name="images" url="/api/product/uploadImages" setPriviews={setPriviewsFun} />
                         </div>
                     </div>
                 </div>
-                <Button type='button' className='w-full btn-blue flex items-center justify-center gap-2'><FaCloudUploadAlt className='text-[20px]' />Publish and View</Button>
+                <div className='w-[250px]'>
+                    <Button type='submit' className=' btn-blue flex items-center w-full justify-center gap-2 font-[600]'>
+                        {
+                            isLoading === true ? <CircularProgress className='reg_loading' color="inherit" /> : <> <FaCloudUploadAlt className='text-[20px] ' />Publish and View</>
+                        }
+                    </Button>
+                </div>
             </form>
 
         </section>

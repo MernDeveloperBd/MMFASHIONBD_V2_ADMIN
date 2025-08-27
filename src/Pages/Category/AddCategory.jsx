@@ -86,7 +86,6 @@ const AddCategory = () => {
                     </div>
                     <h3 className="text-[16px] font-[600] mb-1">Category Image</h3>
                     <div className="grid grid-cols-9 gap-3">
-
                         {
                             previews?.length !== 0 && previews?.map((image, index) => {
                                 return (
