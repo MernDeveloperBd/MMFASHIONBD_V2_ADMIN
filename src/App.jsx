@@ -23,6 +23,8 @@ import toast, { Toaster } from 'react-hot-toast'
 import { fetchDataFromApi } from './utils/api'
 import Profile from './Pages/Profile/Profile'
 import ProductDetails from './Pages/Products/ProductDetails'
+import AddSize from './Pages/Products/AddSize'
+import AddColor from './Pages/Products/AddColor'
 
 
 
@@ -104,6 +106,57 @@ function App() {
             </div>
             <div className={`contentRight py-4 px-5 ${isSideBarOpen === false ? 'w-[100%]' : 'w-[82%]'} transition-all`}>
               <AddProduct />
+            </div>
+          </div>
+        </section>
+      )
+    },
+    {
+      path: "/product/addSize",
+      exact: true,
+      element: (
+        <section className='main'>
+          <Header />
+          <div className="contentMain flex">
+            <div className={`overflow-hidden sidebarWrapper ${isSideBarOpen === true ? 'w-[18%]' : 'w-[0px] opacity-0'} transition-all`}>
+              <Sidebar />
+            </div>
+            <div className={`contentRight py-4 px-5 ${isSideBarOpen === false ? 'w-[100%]' : 'w-[82%]'} transition-all`}>
+              <AddSize />
+            </div>
+          </div>
+        </section>
+      )
+    },
+    {
+      path: "/product/addColor",
+      exact: true,
+      element: (
+        <section className='main'>
+          <Header />
+          <div className="contentMain flex">
+            <div className={`overflow-hidden sidebarWrapper ${isSideBarOpen === true ? 'w-[18%]' : 'w-[0px] opacity-0'} transition-all`}>
+              <Sidebar />
+            </div>
+            <div className={`contentRight py-4 px-5 ${isSideBarOpen === false ? 'w-[100%]' : 'w-[82%]'} transition-all`}>
+              <AddColor />
+            </div>
+          </div>
+        </section>
+      )
+    },
+    {
+      path: "/product/addColor",
+      exact: true,
+      element: (
+        <section className='main'>
+          <Header />
+          <div className="contentMain flex">
+            <div className={`overflow-hidden sidebarWrapper ${isSideBarOpen === true ? 'w-[18%]' : 'w-[0px] opacity-0'} transition-all`}>
+              <Sidebar />
+            </div>
+            <div className={`contentRight py-4 px-5 ${isSideBarOpen === false ? 'w-[100%]' : 'w-[82%]'} transition-all`}>
+              <AddColor />
             </div>
           </div>
         </section>

@@ -77,7 +77,18 @@ const Sidebar = () => {
                                 <Button onClick={()=>setIsOpenFullScreenPanel({open:true, model:"Add Product"})} className=' !text-[rgba(0,0,0,0.8)] !justify-start !capitalize w-full !text-[13px] !pl-6 flex gap-2'><span className='block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]'></span>Product Upload</Button>
                               
                             </li>
-                        </ul></Collapse>
+                            <li className='w-full'>                               
+                              <Link to='/product/addSize'>
+                                <Button className=' !text-[rgba(0,0,0,0.8)] !justify-start !capitalize w-full !text-[13px] !pl-6 flex gap-2'><span className='block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]'></span>Add Product Size</Button>
+                              </Link>                              
+                            </li>
+                            <li className='w-full'>                               
+                              <Link to='/product/addColor'>
+                                <Button className=' !text-[rgba(0,0,0,0.8)] !justify-start !capitalize w-full !text-[13px] !pl-6 flex gap-2'><span className='block w-[5px] h-[5px] rounded-full bg-[rgba(0,0,0,0.2)]'></span>Add Product Color</Button>
+                              </Link>                              
+                            </li>
+                        </ul>
+                        </Collapse>
                         
                     </li>
                     {/* Products end here */}

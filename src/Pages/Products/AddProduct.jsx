@@ -39,10 +39,12 @@ const AddProduct = () => {
         brand: "",
         shopName: "",
         facebookURL: "",
+        sku: "",
         price: "",
         oldPrice: "",
+        whatsApp: "",
         resellingPrice: "",
-        category:"",
+        category: "",
         catName: "",
         catId: "",
         subCat: "",
@@ -64,9 +66,9 @@ const AddProduct = () => {
     const handleChangeProductCat = (event) => {
         setProductCat(event.target.value);
         formFields.catId = event.target.value
-        formFields.category = event.target.value        
+        formFields.category = event.target.value
     };
-    
+
     const selectCatByName = (name) => {
         formFields.catName = name
     }
@@ -131,46 +133,50 @@ const AddProduct = () => {
     }
     const handleSubmit = (e) => {
         e.preventDefault()
-        if(formFields.name === ""){
+        if (formFields.name === "") {
             openAlertBox("error", "Please Enter your product Name")
             return false;
         }
-        if(formFields.description === ""){
+        if (formFields.description === "") {
             openAlertBox("error", "Please Enter your description Name")
             return false;
         }
-        if(formFields.price === ""){
+        if (formFields.price === "") {
             openAlertBox("error", "Please Enter your product price")
             return false;
         }
-        if(formFields.catId === ""){
+        if (formFields.catId === "") {
             openAlertBox("error", "Please Select product Category")
             return false;
         }
-        if(formFields.countInStock === ""){
+        if (formFields.countInStock === "") {
             openAlertBox("error", "Please Enter Product Stock")
             return false;
         }
-        if(formFields.rating === ""){
+        if (!formFields.whatsApp.startsWith("88")) {
+            openAlertBox("error", "WhatsApp number must start with country code 88");
+            return false;
+        }
+        if (formFields.rating === "") {
             openAlertBox("error", "Please Enter Product rating")
             return false;
         }
         setIsLoading(true)
         postData("/api/product/createProduct", formFields).then((res) => {
-            if(res?.error === false){                
-                 setTimeout(() => {
-                setIsLoading(false)
-                setIsOpenFullScreenPanel({ open: false })
-                navigate('/products')  
-                openAlertBox("success", res?.message)  
-            }, 2500) 
-            
-            }else{
+            if (res?.error === false) {
+                setTimeout(() => {
+                    setIsLoading(false)
+                    setIsOpenFullScreenPanel({ open: false })
+                    navigate('/products')
+                    openAlertBox("success", res?.message)
+                }, 2500)
+
+            } else {
                 setIsLoading(false)
                 openAlertBox("error", "Product uploaded failed")
             }
-           
-          })
+
+        })
     }
     const setPriviewsFun = (previewsArr) => {
         setPriviews(previewsArr);
@@ -332,8 +338,14 @@ const AddProduct = () => {
                         </div>
 
                     </div>
-                    {/* Discount, Weight, size, shopname */}
+                    {/* SKU, Color,Product weight size */}
                     <div className="grid grid-cols-4 mb-3 gap-3">
+                        <div className="grid grid-cols-1 mb-3">
+                            <div className="col">
+                                <h3 className="text-[14px] font-[500] mb-1">SKU</h3>
+                                <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm " name='sku' value={formFields.sku} onChange={onChangeInput} />
+                            </div>
+                        </div>
                         {/* color */}
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">Color</h3>
@@ -394,20 +406,37 @@ const AddProduct = () => {
                                 <MenuItem value={'large'}>Large</MenuItem>
                             </Select>
                         </div>
+
+
+                    </div>
+                    {/*Whatapp, Color,facebook url, Popular*/}
+                    <div className="grid grid-cols-4 mb-3 gap-3">
                         {/* shopName */}
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">ShopName</h3>
                             <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='shopName' value={formFields.shopName} onChange={onChangeInput} />
                         </div>
-
-                    </div>
-                    {/*Whatapp, Color,facebook url, Popular*/}
-                    <div className="grid grid-cols-4 mb-3 gap-3">
                         {/* Whatsapp */}
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">WhatsAppNum</h3>
-                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='whatsApp' value={formFields.whatsApp} onChange={onChangeInput} />
-                        </div>                       
+                            <input
+                                type="number"
+                                className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                name="whatsApp"
+                                value={formFields.whatsApp}
+                                onChange={(e) => {
+                                    let val = e.target.value;
+
+                                    // Ensure it always starts with 88
+                                    if (!val.startsWith("88")) {
+                                        val = "88" + val.replace(/^88/, "");
+                                    }
+
+                                    setFormFields({ ...formFields, whatsApp: val });
+                                }}
+                            />
+                        </div>
+
                         {/* Popular */}
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">Is Featured</h3>
@@ -429,7 +458,10 @@ const AddProduct = () => {
                             <h3 className="text-[14px] font-[500] mb-2">FacebookURL</h3>
                             <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='facebookURL' value={formFields.facebookURL} onChange={onChangeInput} />
                         </div>
-                             {/* Rating */}
+                    </div>
+                    {/*Rating*/}
+                    <div className="grid grid-cols-4 mb-3 gap-3">
+                        {/* Rating */}
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">Rating</h3>
                             <Rating name="half-rating" defaultValue={1} precision={0.5}
