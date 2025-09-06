@@ -1,11 +1,10 @@
-import { Button, Select, MenuItem, Checkbox, Tooltip, Pagination } from "@mui/material";
+import { Button, Select, MenuItem, Checkbox, Tooltip, Pagination, Rating } from "@mui/material";
 import { CgExport } from "react-icons/cg";
 import { FiEye } from "react-icons/fi";
 import { MdDeleteOutline } from "react-icons/md";
 import { AiOutlineEdit } from "react-icons/ai";
 import { useContext, useEffect, useState } from "react";
 import { Link } from 'react-router-dom'
-import ProgressBar from "../../Components/ProgressBar/ProgressBar";
 import SearchBox from "../../Components/SearchBox/SearchBox";
 import { MyContext } from "../../App";
 import { deleteData, deleteMultipleData, fetchDataFromApi } from "../../utils/api";
@@ -22,7 +21,7 @@ const Products = () => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [productData, setProductData] = useState([]);
     const [sortedIds, setSortedIds] = useState([])
-    const[isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
         getProducts()
@@ -73,7 +72,7 @@ const Products = () => {
                     productArr[i] = res?.products[i];
                     productArr[i].checked = false
                 }
-                setTimeout(() =>{
+                setTimeout(() => {
                     setProductData(productArr)
                     setIsLoading(false)
                 }, 500)
@@ -90,7 +89,7 @@ const Products = () => {
         fetchDataFromApi(`/api/product/getAllProductsByCatId/${event.target.value}`).then((res) => {
             if (res?.error === false) {
                 setProductData(res?.products)
-                setTimeout(() =>{
+                setTimeout(() => {
                     setIsLoading(false)
                 }, 500)
             }
@@ -101,11 +100,11 @@ const Products = () => {
         setProductSubCat(event.target.value);
         setProductCat('');
         setProductThirdLavelCat('')
-          setIsLoading(true)
+        setIsLoading(true)
         fetchDataFromApi(`/api/product/getAllProductsBySubCatId/${event.target.value}`).then((res) => {
             if (res?.error === false) {
                 setProductData(res?.products)
-                setTimeout(() =>{
+                setTimeout(() => {
                     setIsLoading(false)
                 }, 500)
             }
@@ -116,11 +115,11 @@ const Products = () => {
         setProductThirdLavelCat(event.target.value);
         setProductCat('');
         setProductSubCat('');
-          setIsLoading(true)
+        setIsLoading(true)
         fetchDataFromApi(`/api/product/getAllProductsByThirdSubCatId/${event.target.value}`).then((res) => {
             if (res?.error === false) {
                 setProductData(res?.products)
-                setTimeout(() =>{
+                setTimeout(() => {
                     setIsLoading(false)
                 }, 500)
             }
@@ -176,7 +175,7 @@ const Products = () => {
                 <div className="card my-0 shadow-md sm:rounded-lg bg-white">
                     <div className="col1 flex items-center px-5 py-4 ">
                         <h3 className="text-[20px] font-[700]">Products {productData?.length}</h3>
-                        <div className="col ml-auto w-[30%] flex items-center gap-2 justify-end ">
+                        <div className="col ml-auto w-[35%] flex items-center gap-2 justify-end ">
                             {
                                 sortedIds?.length !== 0 && <Button className="!bg-red-600 !text-white !font-[600] flex items-center gap-1" onClick={deleteMultipleProducts}>Delete
                                 </Button>
@@ -287,37 +286,38 @@ const Products = () => {
 
                     {/* table */}
                     {
-                        isLoading === false && paginatedProducts.length !== 0 ?  <div className="relative overflow-x-auto mt-5 mb-5 ">
-                        <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 ">
-                            <thead className="text-xs text-gray-100 uppercase bg-blue-600 dark:bg-gray-700 mb-2">
-                                <tr>
-                                    <th className="px-6 py-2">
-                                        <Checkbox {...label} size="small" className="!text-white"
-                                            onChange={handleSelectAll}
-                                            checked={productData?.length > 0 ? productData.every((item) => item.checked) : false}
-                                        />
-                                    </th>
-                                    <th className="px-3 py-2">Product</th>
-                                    <th className="px-3 py-2">Category</th>
-                                    <th className="px-3 py-2">Sub Category</th>
-                                    <th className="px-3 py-2">Brand</th>
-                                    <th className="px-3 py-2">Price</th>
-                                    <th className="px-3 py-2">Sales</th>
-                                    <th className="px-3 py-2">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>                                
-                                      {paginatedProducts.length > 0 &&
+                        isLoading === false && paginatedProducts.length !== 0 ? <div className="relative overflow-x-auto mt-5 mb-5 ">
+                            <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 ">
+                                <thead className="text-xs text-gray-100 uppercase bg-blue-600 dark:bg-gray-700 mb-2">
+                                    <tr>
+                                        <th className="px-3 py-2">
+                                            <Checkbox {...label} size="small" className="!text-white"
+                                                onChange={handleSelectAll}
+                                                checked={productData?.length > 0 ? productData.every((item) => item.checked) : false}
+                                            />
+                                        </th>
+                                        <th className="px-3 py-2">Product</th>
+                                        <th className="px-3 py-2">Category</th>
+                                        <th className="px-3 py-2">Sub Category</th>
+                                        <th className="px-3 py-2">Price</th>
+                                        <th className="px-3 py-2">Reselling</th>
+                                        <th className="px-3 py-2">Sells</th>
+                                        <th className="px-3 py-2">Ratings</th>
+                                        <th className="px-3 py-2">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {paginatedProducts.length > 0 &&
                                         paginatedProducts.slice().reverse().map((product, index) => (
                                             <tr key={index} className="odd:bg-white even:bg-gray-50 border-b">
-                                                <td className="px-6 py-2">
+                                                <td className="px-3 py-2">
                                                     <Checkbox {...label} size="small"
                                                         checked={product?.checked === true ? true : false}
                                                         onChange={(e) => handleCheckboxChange(e, product._id, index)}
                                                     />
                                                 </td>
-                                                <td className="px-3 py-2">
-                                                    <div className="flex items-center gap-4 w-[320px]">
+                                                <td className="px-2 py-2">
+                                                    <div className="flex items-center gap-2 w-[280px]">
                                                         <div className="img w-[65px] h-[65px] rounded-md overflow-hidden group">
                                                             <Link to={`/product/${product._id}`}>
                                                                 <img src={product?.images[0]} alt="product image" className="w-full group-hover:scale-105 transition-all" />
@@ -333,7 +333,7 @@ const Products = () => {
                                                 </td>
                                                 <td className="px-3 py-2">{product?.catName}</td>
                                                 <td className="px-3 py-2">{product?.subCat}</td>
-                                                <td className="px-3 py-2">Suti</td>
+                                                
                                                 <td className="px-3 py-2">
                                                     <div className="flex flex-col gap-2">
                                                         <span className="oldPrice line-through text-[12px] font-[500] text-red-600">
@@ -344,14 +344,22 @@ const Products = () => {
                                                         </span>
                                                     </div>
                                                 </td>
+                                                <td className="px-3 py-2">Tk {product?.resellingPrice}</td>
                                                 <td className="px-3 py-2">
                                                     <p className="text-[14px] ">
                                                         <span className="font-[600]">{product?.sale}</span> {product?.sale > 1 ? "Sells" : "Sell"}
                                                     </p>
-                                                    <ProgressBar value={40} type={"warning"} />
+                                                    {/* <ProgressBar value={40} type={"warning"} /> */}
                                                 </td>
                                                 <td className="px-3 py-2">
-                                                    <div className="flex items-center gap-2">
+                                                    <p className="text-[13px] ">
+                                                        <span className="font-[600]">{product?.rating}</span> {product?.rating > 1 ? "Ratings" : "Rating"}
+                                                    </p>
+                                                    <Rating name="half-rating" defaultValue={product?.rating} precision={0.5} readOnly className="!text-base"
+                                                    />
+                                                </td>
+                                                <td className="px-2 py-2">
+                                                    <div className="flex items-center gap-1">
                                                         <Tooltip title="Edit">
                                                             <Button className="!w-[35px] !h-[35px] !min-w-[35px]"
                                                                 onClick={() => setIsOpenFullScreenPanel({ open: true, model: 'Edit Product', id: product?._id })} >
@@ -374,52 +382,52 @@ const Products = () => {
                                                 </td>
                                             </tr>
                                         ))
-                                    }                                
+                                    }
 
-                            </tbody>
-                        </table>
-                        {/* pagination */}
-                        <div className="py-4 px-4 flex items-center justify-between">
-                            {/* Rows per page dropdown */}
-                            <div className="flex items-center gap-4">
-                                {/* Rows per page select */}
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm">Rows per page:</span>
-                                    <Select
-                                        size="small"
-                                        value={rowsPerPage}
-                                        onChange={handleChangeRowsPerPage}
-                                    >
-                                        <MenuItem value={5}>5</MenuItem>
-                                        <MenuItem value={10}>10</MenuItem>
-                                        <MenuItem value={20}>20</MenuItem>
-                                        <MenuItem value={50}>50</MenuItem>
-                                    </Select>
+                                </tbody>
+                            </table>
+                            {/* pagination */}
+                            <div className="py-4 px-4 flex items-center justify-between">
+                                {/* Rows per page dropdown */}
+                                <div className="flex items-center gap-4">
+                                    {/* Rows per page select */}
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm">Rows per page:</span>
+                                        <Select
+                                            size="small"
+                                            value={rowsPerPage}
+                                            onChange={handleChangeRowsPerPage}
+                                        >
+                                            <MenuItem value={5}>5</MenuItem>
+                                            <MenuItem value={10}>10</MenuItem>
+                                            <MenuItem value={20}>20</MenuItem>
+                                            <MenuItem value={50}>50</MenuItem>
+                                        </Select>
+                                    </div>
+
+                                    {/* Showing X–Y of Z */}
+                                    <span className="text-sm text-gray-600">
+                                        {`Showing ${(page - 1) * rowsPerPage + 1}–${Math.min(
+                                            page * rowsPerPage,
+                                            productData.length
+                                        )} of ${productData.length} products`}
+                                    </span>
                                 </div>
 
-                                {/* Showing X–Y of Z */}
-                                <span className="text-sm text-gray-600">
-                                    {`Showing ${(page - 1) * rowsPerPage + 1}–${Math.min(
-                                        page * rowsPerPage,
-                                        productData.length
-                                    )} of ${productData.length} products`}
-                                </span>
+
+                                {/* Pagination */}
+                                <Pagination
+                                    count={Math.ceil(productData.length / rowsPerPage)}
+                                    page={page}
+                                    onChange={handleChangePage}
+                                    color="primary"
+                                    siblingCount={1}   // current page এর পাশে কয়টা দেখাবে
+                                    boundaryCount={1}  // শুরু আর শেষে কয়টা দেখাবে
+                                />
                             </div>
-
-
-                            {/* Pagination */}
-                            <Pagination
-                                count={Math.ceil(productData.length / rowsPerPage)}
-                                page={page}
-                                onChange={handleChangePage}
-                                color="primary"
-                                siblingCount={1}   // current page এর পাশে কয়টা দেখাবে
-                                boundaryCount={1}  // শুরু আর শেষে কয়টা দেখাবে
-                            />
-                        </div>
-                    </div> :<div className="flex h-[50vh] items-center justify-center w-full mx-auto"><Loading /> </div>
+                        </div> : <div className="flex h-[50vh] items-center justify-center w-full mx-auto"><Loading /> </div>
                     }
-                  
+
 
 
                 </div>

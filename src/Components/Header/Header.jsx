@@ -27,6 +27,8 @@ import EditCategory from '../../Pages/Category/EditCategory';
 import AddSubCategory from '../../Pages/subCategory/AddSubCategory';
 import AddAddress from '../../Pages/Address/AddAddress';
 import EditProduct from '../../Pages/Products/EditProduct';
+import AddHomeSlide from '../../Pages/HomeSliderBanners/AddHomeSlide';
+import EditHomeSlide from '../../Pages/HomeSliderBanners/EditHomeSlide';
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
     '& .MuiBadge-badge': {
@@ -190,6 +192,7 @@ const Header = () => {
           {isOpenFullScreenPanel?.model === 'Add Product' && <AddProduct />}
           {isOpenFullScreenPanel?.model === 'Edit Product' && <EditProduct/>}
           {isOpenFullScreenPanel?.model === 'Add Home Slide' && <AddHomeSlide />}
+          {isOpenFullScreenPanel?.model === 'Edit HOme Slide' && <EditHomeSlide/>}
           {isOpenFullScreenPanel?.model === 'Add Category' && <AddCategory />}
           {isOpenFullScreenPanel?.model === 'Edit Category' && <EditCategory />}
           {isOpenFullScreenPanel?.model === 'Add Sub Category' && <AddSubCategory />}

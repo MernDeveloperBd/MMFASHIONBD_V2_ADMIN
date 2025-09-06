@@ -51,11 +51,23 @@ const EditProduct = () => {
   const [productSize, setProductSize] = useState([]);
   const [color, setColor] = useState([]);
   const [productWeight, setProductWeight] = useState("");
+  const [productSizeData, setProductSizeData] = useState([]);
+  const [colorsData, setColorsData] = useState([]);
 
   // Load product
   useEffect(() => {
     if (!isOpenFullScreenPanel?.id) return;
 
+    fetchDataFromApi(`/api/product/productColor/get`).then((res) => {
+      if (res?.error === false) {
+        setColorsData(res?.data)
+      }
+    })
+    fetchDataFromApi(`/api/product/productSize/get`).then((res) => {
+      if (res?.error === false) {
+        setProductSizeData(res?.data)
+      }
+    })
     fetchDataFromApi(`/api/product/${isOpenFullScreenPanel.id}`).then((res) => {
       const p = res?.product;
       if (!p) return;
@@ -134,7 +146,7 @@ const EditProduct = () => {
     e.preventDefault();
 
     // Validation
-    const requiredFields = ["name","description","price","catId","countInStock","rating"];
+    const requiredFields = ["name", "description", "price", "catId", "countInStock", "rating"];
     for (let field of requiredFields) {
       if (!formFields[field]) {
         openAlertBox("error", `Please fill ${field}`);
@@ -162,17 +174,17 @@ const EditProduct = () => {
           {/* Title */}
           <div className="mb-3">
             <h3>Title</h3>
-            <input type="text" name="name" value={formFields.name} onChange={handleInputChange} className="w-full h-10 border p-2"/>
+            <input type="text" name="name" value={formFields.name} onChange={handleInputChange} className="w-full h-10 border p-2" />
           </div>
 
           {/* Description */}
           <div className="mb-3">
             <h3>Description</h3>
-            <textarea name="description" value={formFields.description} onChange={handleInputChange} className="w-full border p-2" rows={4}/>
+            <textarea name="description" value={formFields.description} onChange={handleInputChange} className="w-full border p-2" rows={4} />
           </div>
 
           {/* Category / Sub / Child */}
-          <div className="grid grid-cols-3 gap-3 mb-3">
+          <div className="grid grid-cols-4 gap-3 mb-3">
             <Select value={productCat} onChange={e => { setProductCat(e.target.value); handleSelectChange("catId", e.target.value); }}>
               {cateData?.map(cat => <MenuItem key={cat._id} value={cat._id}>{cat.name}</MenuItem>)}
             </Select>
@@ -182,132 +194,146 @@ const EditProduct = () => {
             <Select value={productThirdLavelCat} onChange={e => { setProductThirdLavelCat(e.target.value); handleSelectChange("thirdSubCatId", e.target.value); }}>
               {cateData?.flatMap(c => c.children || []).flatMap(s => s.children || []).map(third => <MenuItem key={third._id} value={third._id}>{third.name}</MenuItem>)}
             </Select>
+            <div className="col">
+              <h3 className="text-[14px] font-[500] mb-2"> Price</h3>
+              <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='price' value={formFields.price} onChange={handleInputChange} />
+            </div>
           </div>
-           {/* Old Price , Price,Quantity, Brand */}
-                    <div className="grid grid-cols-4 mb-3 gap-3">
-                        {/* Old Price */}
-                        <div className="col">
-                            <h3 className="text-[14px] font-[500] mb-2"> Old Price</h3>
-                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='oldPrice' value={formFields.oldPrice} onChange={handleInputChange} />
-                        </div>
-                        {/* Price */}
-                        <div className="col">
-                            <h3 className="text-[14px] font-[500] mb-2">Reselling Price</h3>
-                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield]" name='resellingPrice' value={formFields.resellingPrice} onChange={handleInputChange} />
-                        </div>
+          {/* Old Price , Price,Quantity, Brand */}
+          <div className="grid grid-cols-4 mb-3 gap-3">
+            {/* Old Price */}
+            <div className="col">
+              <h3 className="text-[14px] font-[500] mb-2"> Old Price</h3>
+              <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='oldPrice' value={formFields.oldPrice} onChange={handleInputChange} />
+            </div>
+            {/* Reselling Price */}
+            <div className="col">
+              <h3 className="text-[14px] font-[500] mb-2">Reselling Price</h3>
+              <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield]" name='resellingPrice' value={formFields.resellingPrice} onChange={handleInputChange} />
+            </div>
 
-                        {/* Quantity */}
-                        <div className="col">
-                            <h3 className="text-[14px] font-[500] mb-2">Quantity</h3>
-                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='countInStock' value={formFields.countInStock} onChange={handleInputChange} />
-                        </div>
-                        {/* Brand */}
-                        <div className="grid grid-cols-1 mb-3">
-                            <div className="col">
-                                <h3 className="text-[14px] font-[500] mb-1">Brand</h3>
-                                <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm " name='brand' value={formFields.brand} onChange={handleInputChange} />
-                            </div>
-                        </div>
+            {/* Quantity */}
+            <div className="col">
+              <h3 className="text-[14px] font-[500] mb-2">Quantity</h3>
+              <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='countInStock' value={formFields.countInStock} onChange={handleInputChange} />
+            </div>
+            {/* Brand */}
+            <div className="grid grid-cols-1 mb-3">
+              <div className="col">
+                <h3 className="text-[14px] font-[500] mb-1">Brand</h3>
+                <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm " name='brand' value={formFields.brand} onChange={handleInputChange} />
+              </div>
+            </div>
 
-                    </div>
-          
+          </div>
+
 
           <div className="grid grid-cols-4 gap-3 mb-3">
-             <div className="col">
-                            <h3 className="text-[14px] font-[500] mb-2">ShopName</h3>
-                            <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='shopName' value={formFields.shopName} onChange={handleInputChange} />
-                        </div>
-                         <div className="col">
-                            <h3 className="text-[14px] font-[500] mb-2">WhatsAppNum</h3>
-                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='whatsApp' value={formFields.whatsApp} onChange={handleInputChange} />
-                        </div> 
-                          {/* Popular */}
-                        <div className="col">
-                            <h3 className="text-[14px] font-[500] mb-2">Is Featured</h3>
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="productCatDrop"
-                                size='small'
-                                className='w-full'
-                                value={productFeatured}
-                                label="Product Featured"
-                                onChange={e => { setProductFeatured(e.target.value); handleSelectChange("isFeatured", e.target.value); }}
-                            >
-                                <MenuItem value={true}>True</MenuItem>
-                                <MenuItem value={false}>False</MenuItem>
-                            </Select>
-                        </div>
-                           {/* color */}
-                        <div className="col">
-                            <h3 className="text-[14px] font-[500] mb-2">Color</h3>
-                            <Select
-                                multiple
-                                labelId="demo-simple-select-label"
-                                id="color"
-                                name="color"
-                                size='small'
-                                className='w-full'
-                                value={color}
-                                label="Product weight"
-                                onChange={e => handleMultiSelectChange("color", e.target.value)} MenuProps={MenuProps}
-                            >
-                                <MenuItem value={"red"}>Red</MenuItem>
-                                <MenuItem value={"pink"}>Pink</MenuItem>
-                                <MenuItem value={"white"}>White</MenuItem>
-                                <MenuItem value={"grey"}>Grey</MenuItem>
-                                <MenuItem value={"blue"}>Blue</MenuItem>
-                                <MenuItem value={"green"}>Green</MenuItem>
-                                <MenuItem value={"pink"}>Pink</MenuItem>
-                            </Select>
-                        </div>
+            <div className="col">
+              <h3 className="text-[14px] font-[500] mb-2">ShopName</h3>
+              <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='shopName' value={formFields.shopName} onChange={handleInputChange} />
+            </div>
+            <div className="col">
+              <h3 className="text-[14px] font-[500] mb-2">WhatsAppNum</h3>
+              <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='whatsApp' value={formFields.whatsApp} onChange={handleInputChange} />
+            </div>
+            {/* Popular */}
+            <div className="col">
+              <h3 className="text-[14px] font-[500] mb-2">Is Featured</h3>
+              <Select
+                labelId="demo-simple-select-label"
+                id="productCatDrop"
+                size='small'
+                className='w-full'
+                value={productFeatured}
+                label="Product Featured"
+                onChange={e => { setProductFeatured(e.target.value); handleSelectChange("isFeatured", e.target.value); }}
+              >
+                <MenuItem value={true}>True</MenuItem>
+                <MenuItem value={false}>False</MenuItem>
+              </Select>
+            </div>
+            {/* Color */}
+            <div className="col">
+              <h3 className="text-[14px] font-[500] mb-2">Color</h3>
+              {colorsData?.length !== 0 && (
+                <Select
+                  multiple
+                  labelId="demo-simple-select-label"
+                  id="color"
+                  name="color"
+                  size="small"
+                  className="w-full"
+                  value={color}
+                  onChange={(e) => {
+                    setColor(e.target.value);
+                    handleMultiSelectChange("color", e.target.value);
+                  }}
+                  MenuProps={MenuProps}
+                >
+                  {colorsData?.map((item, index) => (
+                    <MenuItem key={index} value={item?.name}>
+                      {item?.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              )}
+            </div>
           </div>
 
           {/* Color / Weight / Size / FacebookURL */}
           <div className="grid grid-cols-4 gap-3 mb-3">
-             {/* Weight */}
-                        <div className="col">
-                            <h3 className="text-[14px] font-[500] mb-2">Product Weight</h3>
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="productWeight"
-                                size='small'
-                                className='w-full'
-                                value={productWeight}
-                                label="Product weight"
-                                onChange={e => { setProductWeight(e.target.value); handleSelectChange("productWeight", e.target.value); }}
-                            >
-                                <MenuItem value={500}>500 gm</MenuItem>
-                                <MenuItem value={700}>700 gm</MenuItem>
-                                <MenuItem value={1000}>1 kg</MenuItem>
-                            </Select>
-                        </div>
-                        {/* Size */}
-                        <div className="col">
-                            <h3 className="text-[14px] font-[500] mb-2">Size</h3>
-                            <Select
-                                multiple
-                                labelId="demo-simple-select-label"
-                                id="productSize"
-                                size='small'
-                                className='w-full'
-                                value={productSize}
-                                label="Product size"
-                                 onChange={e => handleMultiSelectChange("productSize", e.target.value)} MenuProps={MenuProps}
-                            >
-                                <MenuItem value={'small'}>Small</MenuItem>
-                                <MenuItem value={'medium'}>Medium</MenuItem>
-                                <MenuItem value={'large'}>Large</MenuItem>
-                            </Select>
-                        </div>
-                         {/* facebookUrl */}
-                        <div className="col">
-                            <h3 className="text-[14px] font-[500] mb-2">FacebookURL</h3>
-                            <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='facebookURL' value={formFields.facebookURL} onChange={handleInputChange} />
-                        </div>
+            {/* Weight */}
+            <div className="col">
+              <h3 className="text-[14px] font-[500] mb-2">Product Weight</h3>
+              <Select
+                labelId="demo-simple-select-label"
+                id="productWeight"
+                size='small'
+                className='w-full'
+                value={productWeight}
+                label="Product weight"
+                onChange={e => { setProductWeight(e.target.value); handleSelectChange("productWeight", e.target.value); }}
+              >
+                <MenuItem value={500}>500 gm</MenuItem>
+                <MenuItem value={700}>700 gm</MenuItem>
+                <MenuItem value={1000}>1 kg</MenuItem>
+              </Select>
+            </div>
+            {/* Size */}
+            <div className="col">
+              <h3 className="text-[14px] font-[500] mb-2">Size</h3>
+              {productSizeData?.length !== 0 && (
+                <Select
+                  multiple
+                  labelId="demo-simple-select-label"
+                  id="productSize"
+                  size="small"
+                  className="w-full"
+                  value={productSize}
+                  onChange={(e) => {
+                    setProductSize(e.target.value);
+                    handleMultiSelectChange("productSize", e.target.value);
+                  }}
+                  MenuProps={MenuProps}
+                >
+                  {productSizeData?.map((item, index) => (
+                    <MenuItem key={index} value={item?.name}>
+                      {item?.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              )}
+            </div>
+            {/* facebookUrl */}
+            <div className="col">
+              <h3 className="text-[14px] font-[500] mb-2">FacebookURL</h3>
+              <input type="text" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='facebookURL' value={formFields.facebookURL} onChange={handleInputChange} />
+            </div>
             <div className="mb-3">
-            <h3>Rating</h3>
-            <Rating value={formFields.rating} onChange={handleRatingChange}/>
-          </div>
+              <h3>Rating</h3>
+              <Rating value={formFields.rating} onChange={handleRatingChange} />
+            </div>
           </div>
 
           {/* Images */}
@@ -315,17 +341,17 @@ const EditProduct = () => {
             {previews.map((img, idx) => (
               <div key={idx} className="relative">
                 <span className="absolute top-0 right-0 w-5 h-5 bg-red-700 text-white flex items-center justify-center cursor-pointer" onClick={() => handleRemoveImage(img, idx)}>x</span>
-                <img src={img} className="w-full h-24 object-cover"/>
+                <img src={img} className="w-full h-24 object-cover" />
               </div>
             ))}
-            <UploadBox multiple={true} name="images" url="/api/product/uploadImages" setPriviews={handleImageChange}/>
+            <UploadBox multiple={true} name="images" url="/api/product/uploadImages" setPriviews={handleImageChange} />
           </div>
 
         </div>
 
         <div className='w-[250px]'>
           <Button type='submit' className='btn-blue flex items-center w-full justify-center gap-2 font-[600]'>
-            {isLoading ? <CircularProgress color="inherit"/> : <><FaCloudUploadAlt/> Publish</>}
+            {isLoading ? <CircularProgress color="inherit" /> : <><FaCloudUploadAlt /> Publish</>}
           </Button>
         </div>
       </form>

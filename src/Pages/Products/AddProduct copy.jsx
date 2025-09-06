@@ -33,8 +33,6 @@ const AddProduct = () => {
     const [previews, setPriviews] = useState([]);
     const [isLoading, setIsLoading] = useState(false)
     const navigate = useNavigate()
-    const [filteredSubCats, setFilteredSubCats] = useState([]);
-const [filteredThirdCats, setFilteredThirdCats] = useState([]);
 
     const [formFields, setFormFields] = useState({
         name: "",
@@ -80,58 +78,30 @@ const [filteredThirdCats, setFilteredThirdCats] = useState([]);
             }            
         })
     },[])
-    //
+
     const handleChangeProductCat = (event) => {
-    setProductCat(event.target.value);
-    formFields.catId = event.target.value;
-    formFields.category = event.target.value;
+        setProductCat(event.target.value);
+        formFields.catId = event.target.value
+        formFields.category = event.target.value
+    };
 
-    // নির্বাচিত ক্যাটাগরি থেকে সাব-ক্যাটাগরি বের করা
-    const selectedCat = cateData.find(cat => cat._id === event.target.value);
-    if (selectedCat) {
-        setFilteredSubCats(selectedCat.children || []);
-    } else {
-        setFilteredSubCats([]);
+    const selectCatByName = (name) => {
+        formFields.catName = name
     }
-
-    // subCategory ও thirdCategory রিসেট করা
-    setProductSubCat('');
-    setProductThirdLavelCat('');
-    setFilteredThirdCats([]);
-};
-
-const selectCatByName = (name) => {
-    formFields.catName = name;
-};
-
-const handleChangeProductSubCat = (event) => {
-    setProductSubCat(event.target.value);
-    formFields.subCatId = event.target.value;
-
-    // নির্বাচিত সাব-ক্যাটাগরি থেকে থার্ড ক্যাটাগরি বের করা
-    const selectedSubCat = filteredSubCats.find(sub => sub._id === event.target.value);
-    if (selectedSubCat) {
-        setFilteredThirdCats(selectedSubCat.children || []);
-    } else {
-        setFilteredThirdCats([]);
+    const handleChangeProductSubCat = (event) => {
+        setProductSubCat(event.target.value);
+        formFields.subCatId = event.target.value
+    };
+    const selectSubCatByName = (name) => {
+        formFields.subCat = name
     }
-
-    // thirdCategory রিসেট করা
-    setProductThirdLavelCat('');
-};
-
-const selectSubCatByName = (name) => {
-    formFields.subCat = name;
-};
-
-const handleChangeProductThirdLavelCat = (event) => {
-    setProductThirdLavelCat(event.target.value);
-    formFields.thirdSubCatId = event.target.value;
-};
-const selectThirdLavelCatByName = (name) => {
-    formFields.thirdSubCat = name;
-};
-
+    const handleChangeProductThirdLavelCat = (event) => {
+        setProductThirdLavelCat(event.target.value);
+        formFields.thirdSubCatId = event.target.value
+    };
+    const selectThirdLavelCatByName = (name) => {
+        formFields.thirdSubCat = name
+    }
     const handleChangeProductFeatured = (event) => {
         setproductFeatured(event.target.value);
         formFields.isFeatured = event.target.value
@@ -195,7 +165,7 @@ const selectThirdLavelCatByName = (name) => {
             openAlertBox("error", "Please Select product Category")
             return false;
         }
-        if (formFields.countInStock === "" ) {
+        if (formFields.countInStock === "") {
             openAlertBox("error", "Please Enter Product Quantity")
             return false;
         }
@@ -287,59 +257,69 @@ const selectThirdLavelCatByName = (name) => {
                                 </Select>
                             }
                         </div>
-                      {/* Sub Category */}
-<div className="col">
-    <h3 className="text-[14px] font-[500] mb-2"> SubCategory</h3>
-    {
-        filteredSubCats?.length !== 0 && (
-            <Select
-                id='productSubCatDrop'
-                size='small'
-                className='w-full'
-                value={productSubCat}
-                label="Sub Category"
-                onChange={handleChangeProductSubCat}
-            >
-                {
-                    filteredSubCats.map((subCat, index_) => (
-                        <MenuItem key={index_} value={subCat?._id} onClick={() => selectSubCatByName(subCat?.name)}>
-                            {subCat?.name}
-                        </MenuItem>
-                    ))
-                }
-            </Select>
-        )
-    }
-</div>
+                        {/* Sub Category */}
+                        <div className="col">
+                            <h3 className="text-[14px] font-[500] mb-2"> SubCategory</h3>
+                            {
+                                cateData?.length !== 0 && <Select
+                                    id='productSubCatDrop'
+                                    size='small'
+                                    className='w-full'
+                                    value={productSubCat}
+                                    label="Sub Category"
+                                    onChange={handleChangeProductSubCat}
+                                >
+                                    {
+                                        cateData?.map((cat) => {
+                                            return (
+                                                cat?.children?.length !== 0 && cat?.children?.map((subCat, index_) => {
+                                                    return (
+                                                        <MenuItem key={index_} value={subCat?._id} onClick={() => selectSubCatByName(subCat?.name)}>{subCat?.name}</MenuItem>
+                                                    )
+                                                })
 
-{/* Child Category */}
-<div className="col">
-    <h3 className="text-[14px] font-[500] mb-2"> Child Category</h3>
-    {
-        filteredThirdCats?.length !== 0 && (
-            <Select
-                id='productThirdCatDrop'
-                size='small'
-                className='w-full'
-                value={productThirdLavelCat}
-                label="Third Lavel Category"
-                onChange={handleChangeProductThirdLavelCat}
-            >
-                {
-                    filteredThirdCats.map((thirdLabelCat, index__) => (
-                        <MenuItem
-                            key={index__}
-                            value={thirdLabelCat?._id}
-                            onClick={() => selectThirdLavelCatByName(thirdLabelCat?.name)}
-                        >
-                            {thirdLabelCat?.name}
-                        </MenuItem>
-                    ))
-                }
-            </Select>
-        )
-    }
-</div>
+
+                                            )
+                                        })
+                                    }
+                                </Select>
+                            }
+                        </div>
+                        {/* Child Category */}
+                        <div className="col">
+                            <h3 className="text-[14px] font-[500] mb-2"> Child Category</h3>
+                            {
+                                cateData?.length !== 0 && <Select
+                                    id='productCatDrop'
+                                    size='small'
+                                    className='w-full'
+                                    value={productThirdLavelCat}
+                                    label="Third Lavel Category"
+                                    onChange={handleChangeProductThirdLavelCat}
+                                >
+                                    {
+                                        cateData?.map((cat) => {
+                                            return (
+                                                cat?.children?.length !== 0 && cat?.children?.map((subCat) => {
+                                                    return (
+                                                        subCat?.children?.length !== 0 && subCat?.children?.map((thirdLabelCat, index__) => {
+                                                            return (
+                                                                <MenuItem key={index__} value={thirdLabelCat?._id}
+                                                                    onClick={() => selectThirdLavelCatByName(thirdLabelCat?.name)}
+                                                                >{thirdLabelCat?.name}</MenuItem>
+                                                            )
+                                                        })
+
+                                                    )
+                                                })
+
+
+                                            )
+                                        })
+                                    }
+                                </Select>
+                            }
+                        </div>
 
                         {/* Price */}
                         <div className="col">
@@ -363,7 +343,7 @@ const selectThirdLavelCatByName = (name) => {
                         {/* Quantity */}
                         <div className="col">
                             <h3 className="text-[14px] font-[500] mb-2">Quantity <span className='text-red-600'> *</span></h3>
-                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"  name='countInStock' value={formFields.countInStock} onChange={onChangeInput} />
+                            <input type="number" className="w-full h-[40px] border border-[rgba(0,0,0,0.1)] focus:outline-none focus:border-[rgba(0,0,0,0.4)] p-3 rounded-sm text-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" name='countInStock' value={formFields.countInStock} onChange={onChangeInput} />
                         </div>
                         {/* Brand */}
                         <div className="grid grid-cols-1 mb-3">

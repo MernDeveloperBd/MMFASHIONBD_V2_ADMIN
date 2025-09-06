@@ -36,7 +36,7 @@ const CategoryList = () => {
     }
 
     const deleteCat = (id) => {
-        deleteData(`/api/category/${id}`).then((res) => {
+        deleteData(`/api/category/single/${id}`).then((res) => {
             fetchDataFromApi('/api/category')
                 .then((res) => {
                     setCateData(res?.data)

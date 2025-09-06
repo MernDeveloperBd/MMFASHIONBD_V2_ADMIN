@@ -13,18 +13,22 @@ const ProductDetailsRight = ({ product }) => {
                 <div className="flex items-center gap-3">
                     <span className='w-[25%]  text-sm font-semibold flex items-center gap-2'><MdBrandingWatermark className='opacity-65' /> Price</span>
                     <span>:</span>
-                    <span className='flex items-center'><TbCurrencyTaka className='text-xl' />{product?.price}</span>
+                    <span className='flex items-center'><TbCurrencyTaka className='text-xl' />{product?.price}</span><span className='flex items-center line-through text-red-600 text-sm'><TbCurrencyTaka className='text-xl' />{product?.oldPrice}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                    <span className='w-[25%]  text-sm font-semibold flex items-center gap-2 text-red-600 '><MdBrandingWatermark className='opacity-65 ' />Old Price</span>
+                    <span className='w-[25%]  text-sm font-semibold flex items-center gap-2 text-blue-600 '><MdBrandingWatermark className='opacity-65 ' />Reselling Price</span>
                     <span>:</span>
-                    <span className='flex items-center line-through text-red-600 text-sm'><TbCurrencyTaka className='text-xl' />{product?.oldPrice}</span>
+                    <span className='flex items-center line-through text-blue-600 text-sm'><TbCurrencyTaka className='text-xl' />{product?.resellingPrice}</span>
                 </div>
-                <div className="flex items-center gap-3">
+                {
+                    product?.sku && 
+                    <div className="flex items-center gap-3">
                     <span className='w-[25%]  text-sm font-semibold flex items-center gap-2'><MdBrandingWatermark className='opacity-65' /> SKU</span>
                     <span>:</span>
                     <span>{product?.sku}</span>
                 </div>
+                }
+                
                 <div className="flex items-center gap-3">
                     <span className='w-[25%]  text-sm font-semibold flex items-center gap-2'><MdBrandingWatermark className='opacity-65' /> Brand</span>
                     <span>:</span>
@@ -44,13 +48,7 @@ const ProductDetailsRight = ({ product }) => {
                     <span className='w-[25%]  text-sm font-semibold flex items-center gap-2'><MdBrandingWatermark className='opacity-65' /> Stock</span>
                     <span>:</span>
                     <span>{product?.countInStock}</span>
-                    {/* <span className="text-[22px] font-bold text-green-600">${product?.price}</span> */}
-                    {/*   {product?.oldPrice && (
-            <span className="line-through text-gray-400">${product.oldPrice}</span>
-          )} */}
                 </div>
-
-
                 <div className="flex items-center gap-3">
                     <span className='w-[25%]  text-sm font-semibold flex items-center gap-2'>
                         <MdBrandingWatermark className='opacity-65' /> Rating
@@ -87,7 +85,7 @@ const ProductDetailsRight = ({ product }) => {
                             {
                                 product?.color?.map((color, idx) => {
                                     return (
-                                        <span className='inline-block py-1 px-2 shadow-sm bg-[#fff] text-[12px] font-[500] ' key={idx}>{color}</span>
+                                        <span className='inline-block py-1 px-2 shadow-sm bg-violet-200 text-[12px] font-[500] ' key={idx}>{color}</span>
                                     )
                                 })
                             }
@@ -112,22 +110,21 @@ const ProductDetailsRight = ({ product }) => {
                     </div>
                 }
                 {/* Weight */}
-                {
-                    product?.productWeight?.length !== 0 &&
-                    <div className="flex items-center gap-3">
-                        <span className='w-[25%]  text-sm font-semibold flex items-center gap-2'><MdBrandingWatermark className='opacity-65' /> Weight</span>
-                        <span>:</span>
-                        <div className='flex gap-2'>
-                            {
-                                product?.productWeight?.map((weight, idx) => {
-                                    return (
-                                        <span className='inline-block py-1 px-2 shadow-sm bg-[#fff] text-[12px] font-[500] ' key={idx}>{weight}</span>
-                                    )
-                                })
-                            }
-                        </div>
-                    </div>
-                }
+            {Array.isArray(product?.productWeight) && product?.productWeight.length > 0 && (
+  <div className="flex items-center gap-3">
+    <span className='w-[25%] text-sm font-semibold flex items-center gap-2'>
+      <MdBrandingWatermark className='opacity-65' /> Weight
+    </span>
+    <span>:</span>
+    <div className='flex gap-2'>
+      {product?.productWeight.map((weight, idx) => (
+        <span key={idx} className='inline-block py-1 px-2 shadow-sm bg-[#fff] text-[12px] font-[500]'>
+          {weight}
+        </span>
+      ))}
+    </div>
+  </div>
+)}
                 {/* Created at */}
                 <div className="flex items-center gap-3">
                     <span className='w-[25%]  text-sm font-semibold flex items-center gap-2'><MdBrandingWatermark className='opacity-65' /> Published</span>
@@ -150,9 +147,9 @@ const ProductDetailsRight = ({ product }) => {
                         href={`https://wa.me/${String(product?.whatsApp).replace(/\D/g, '')}?text=${encodeURIComponent(`Hi, I'm interested in your product: ${product?.name}. Details: ${window.location.origin}/product/${product?._id}`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
+                        className="text-green-700 font-semibold hover:underline"
                     >
-                        {product?.whatsApp}
+                        +{product?.whatsApp}
                     </a>
                 </div>
 
